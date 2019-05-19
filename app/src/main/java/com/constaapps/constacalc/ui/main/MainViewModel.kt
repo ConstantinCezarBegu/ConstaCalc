@@ -1,7 +1,14 @@
 package com.constaapps.constacalc.ui.main
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class MainViewModel : ViewModel() {
-    // TODO: Implement the ViewModel
+    val currentFormula: MutableLiveData<String> by lazy {
+        MutableLiveData<String>()
+    }
+
+    val currentAnswer: MutableLiveData<String> by lazy {
+        MutableLiveData<String>()
+    }
 }
