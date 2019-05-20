@@ -1,5 +1,6 @@
 package com.constaapps.constacalc.ui.main
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,7 +12,6 @@ import androidx.lifecycle.ViewModelProviders
 import com.constaapps.constacalc.R
 import kotlinx.android.synthetic.main.main_fragment.*
 import kotlinx.android.synthetic.main.main_fragment.view.*
-import java.io.StringReader
 
 
 class MainFragment : Fragment() {
@@ -48,17 +48,62 @@ class MainFragment : Fragment() {
 
 
     private fun enableButtons(view: View) {
-        val buttons = listOf<Button>(
-            view.button1, view.button2, view.button5,
-            view.button6, view.button7, view.button9, view.button10,
-            view.button11, view.button13, view.button14, view.button15,
-            view.button17, view.button18
-        )
+
+
+        val buttons =
+            if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                listOf<Button>(
+                    view.button, view.button1, view.button2, view.button4, view.button5,
+                    view.button6, view.button7, view.button8, view.button9, view.button10,
+                    view.button11, view.button12, view.button13, view.button14, view.button15,
+                    view.button16, view.button17, view.button18, view.button19, view.button21,
+                    view.button23, view.button24, view.button25, view.button26,
+                    view.button27, view.button28, view.button29, view.button30,
+                    view.button32
+                )
+            }else {
+                listOf<Button>(
+                    view.button1, view.button2, view.button4, view.button5,
+                    view.button6, view.button7, view.button8, view.button9, view.button10,
+                    view.button11, view.button12, view.button13, view.button14, view.button15,
+                    view.button16, view.button17, view.button18, view.button19
+                )
+            }
+
+
+        buttons.forEach { button ->
+            button.setOnClickListener {
+
+                viewModel.currentFormula.value = viewModel.currentFormula.value.orEmpty() +
+                        when (button.text.toString()) {
+                            //This is for the non inverse
+                            "-" -> "-"
+                            "×" -> "*"
+                            "÷" -> "/"
+                            "%" -> "percentage"
+                            "π" -> "PI"
+                            "sin" -> "sin("
+                            "cos" -> "cos("
+                            "tan" -> "tan("
+                            "EXP" -> "E"
+                            "x!" -> ")!"
+                            "ln" -> "ln("
+                            "log" -> "log("
+                            "√" -> "sqrt("
+                            "xⁿ" -> ")^("
+                            //This is for the inverse
+
+                            //This is the numbers and char that requires no change.
+                            else -> button.text
+                        }
+            }
+        }
 
         view.button20.let {
+            // This is the clear button
             it.setOnClickListener {
                 viewModel.currentFormula.value = viewModel.currentFormula.value!!.dropLast(1)
-                if (viewModel.currentFormula.value.toString().isBlank()){
+                if (viewModel.currentFormula.value.toString().isBlank()) {
                     view.calculatorAnswer.text = "0.0"
                 }
             }
@@ -71,33 +116,21 @@ class MainFragment : Fragment() {
         }
 
         view.button3.setOnClickListener {
+            // This is the equals button
             view.calculatorAnswer.text = CalculatorBrain.calculate(viewModel.currentFormula.value)
         }
 
-        view.button4.setOnClickListener {
-            // This is the + button
-            viewModel.currentFormula.value = viewModel.currentFormula.value.orEmpty() + "+"
-        }
-        view.button8.setOnClickListener {
-            // This is the - button
-            viewModel.currentFormula.value = viewModel.currentFormula.value.orEmpty() + "-"
-        }
-        view.button12.setOnClickListener {
-            // This is the × button
-            viewModel.currentFormula.value = viewModel.currentFormula.value.orEmpty() + "*"
-        }
-        view.button16.setOnClickListener {
-            // This is the × button
-            viewModel.currentFormula.value = viewModel.currentFormula.value.orEmpty() + "/"
-        }
-        view.button19.setOnClickListener {
-            // This is the percentage (%) button
-            viewModel.currentFormula.value = viewModel.currentFormula.value.orEmpty() + "percentage"
-        }
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            view.button33.setOnClickListener {
+                //This is the rad button
+            }
 
-        buttons.forEach { button ->
-            button.setOnClickListener {
-                viewModel.currentFormula.value = viewModel.currentFormula.value.orEmpty() + button.text
+            view.button31.setOnClickListener {
+                //This is the INV button
+            }
+
+            view.button22.setOnClickListener {
+                //This is the ANS button
             }
         }
     }
