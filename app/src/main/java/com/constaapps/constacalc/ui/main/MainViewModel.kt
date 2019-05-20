@@ -11,4 +11,8 @@ class MainViewModel : ViewModel() {
     val currentAnswer: MutableLiveData<String> by lazy {
         MutableLiveData<String>()
     }
+
+    val inverse: MutableLiveData<Boolean> by lazy {
+        MutableLiveData<Boolean>()
+    }
 }
