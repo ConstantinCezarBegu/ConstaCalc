@@ -43,7 +43,7 @@ class MainFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
         viewModel.let {viewModel ->
-            viewModel.currentFormula.observe(this, Observer {
+            viewModel.displayFormula.observe(this, Observer {
                 calculatorFormula.text = it.cleanListToString()
             })
             viewModel.currentAnswer.observe(this, Observer {
@@ -67,7 +67,7 @@ class MainFragment : Fragment() {
             if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
                 listOf<Button>(
                     view.button!!, view.button1, view.button4, view.button5,
-                    view.button6, view.button7, view.button8, view.button9, view.button10,
+                    view.button6, view.button7, view.button9, view.button10,
                     view.button11, view.button12, view.button13, view.button14, view.button15,
                     view.button16, view.button17, view.button18, view.button19, view.button21!!,
                     view.button23!!, view.button24!!, view.button25!!, view.button26!!,
@@ -77,7 +77,7 @@ class MainFragment : Fragment() {
             } else {
                 listOf<Button>(
                     view.button1, view.button4, view.button5,
-                    view.button6, view.button7, view.button8, view.button9, view.button10,
+                    view.button6, view.button7, view.button9, view.button10,
                     view.button11, view.button12, view.button13, view.button14, view.button15,
                     view.button16, view.button17, view.button18, view.button19
                 )
@@ -98,6 +98,21 @@ class MainFragment : Fragment() {
                 viewModel.currentFormula.update(button2.text.toString())
                 viewModel.displayFormula.update(button2.text.toString())
                 viewModel.allowDecimal.value = false
+            }
+
+        }
+
+        view.button8.let {button ->
+            // This is the minus button
+            button.setOnClickListener {
+                viewModel.currentFormula.update(buttonTextToGrammar("-"))
+                viewModel.displayFormula.update(buttonTextToDisplayText("-"))
+            }
+
+            button.setOnLongClickListener {
+                viewModel.currentFormula.update(buttonTextToGrammar("neg"))
+                viewModel.displayFormula.update(buttonTextToDisplayText("neg"))
+                return@setOnLongClickListener true
             }
 
         }
@@ -162,6 +177,7 @@ class MainFragment : Fragment() {
     private fun buttonTextToGrammar(buttonText: String): String {
         return when (buttonText) {
             //This is for the non inverse
+            "-" -> "minus"
             "×" -> "*"
             "÷" -> "/"
             "%" -> "percentage"
@@ -175,6 +191,7 @@ class MainFragment : Fragment() {
             "log" -> "log("
             "√" -> "sqrt("
             "xⁿ" -> ")^("
+            "abs" -> "abs("
             //This is for the inverse
             "sin⁻¹" -> "sin-1("
             "cos⁻¹" -> "cos-1("
@@ -183,6 +200,7 @@ class MainFragment : Fragment() {
             "10ⁿ" -> "10^("
             "x²" -> ")^2"
             "ⁿ√x" -> ")root("
+            "neg" -> "neg("
             //This is the numbers and char that requires no change.
             else -> buttonText
         }
@@ -200,6 +218,7 @@ class MainFragment : Fragment() {
             "log" -> "log("
             "√" -> "√("
             "xⁿ" -> ")^("
+            "abs" -> "abs("
             //This is for the inverse
             "sin⁻¹" -> "sin⁻¹("
             "cos⁻¹" -> "cos⁻¹("
@@ -208,6 +227,7 @@ class MainFragment : Fragment() {
             "10ⁿ" -> "10^("
             "x²" -> ")^2"
             "ⁿ√x" -> ")√("
+            "neg" -> "-("
             //This is the numbers and char that requires no change.
             else -> buttonText
         }
@@ -264,20 +284,20 @@ class MainFragment : Fragment() {
         val radOrDegree =
             if (viewModel.degree.value!!){
                 this.toString()
-                    .replace("sin(", "sin(PI/180*")
-                    .replace("cos(", "cos(PI/180*")
-                    .replace("tan(", "tan(PI/180*")
-                    .replace("sin-1(", "sin-1(PI/180*")
-                    .replace("cos-1(", "cos-1(PI/180*")
-                    .replace("tan-1(", "tan-1(PI/180*")
+                    .replace("sin(", "sdeg(")
+                    .replace("cos(", "cdeg(")
+                    .replace("tan(", "tdeg(")
+                    .replace("sin-1(", "s-1deg(")
+                    .replace("cos-1(", "c-1deg(")
+                    .replace("tan-1(", "t-1deg(")
             }else{
                 this.toString()
-                    .replace("sin(PI/180*", "sin(")
-                    .replace("cos(PI/180*", "cos(")
-                    .replace("tan(PI/180*", "tan(")
-                    .replace("sin-1(PI/180*", "sin-1(")
-                    .replace("cos-1(PI/180*", "cos-1(")
-                    .replace("tan-1(PI/180*", "tan-1(")
+                    .replace("sdeg(", "sin(")
+                    .replace("cdeg(", "cos(")
+                    .replace("tdeg(", "tan(")
+                    .replace("s-1deg(", "sin-1(")
+                    .replace("c-1deg(", "cos-1(")
+                    .replace("t-1deg(", "tan-1(")
             }
         return radOrDegree.replace(" ", "").replace(",", "").dropLast(1).drop(1)
     }
