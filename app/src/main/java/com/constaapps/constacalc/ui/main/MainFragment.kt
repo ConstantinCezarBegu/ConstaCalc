@@ -9,7 +9,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.core.content.ContextCompat
+import androidx.core.text.isDigitsOnly
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.constaapps.constacalc.R
@@ -37,57 +39,34 @@ class MainFragment : Fragment() {
         enableButtons(view)
     }
 
-    @SuppressLint("SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
-        viewModel.currentFormula.observe(this, Observer {
-            calculatorFormula.text = it
-        })
+        viewModel.let {viewModel ->
+            viewModel.currentFormula.observe(this, Observer {
+                calculatorFormula.text = it.cleanListToString()
+            })
+            viewModel.currentAnswer.observe(this, Observer {
+                answerDisplayOutput(it)
+            })
 
-        viewModel.currentAnswer.observe(this, Observer {
-            calculatorAnswer.text = it
-        })
-
-        viewModel.inverse.observe(this, Observer {
-            if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                if (it) {
-                    button31!!.let{ button ->
-                        button.background = ColorDrawable(ContextCompat.getColor(context!!, R.color.btnAccent))
-                        button.setTextColor(ContextCompat.getColor(context!!, R.color.textColorAccent))
-                    }
-                    button30!!.text = "sin⁻¹"
-                    button27!!.text = "cos⁻¹"
-                    button24!!.text = "tan⁻¹"
-                    button29!!.text = "eⁿ"
-                    button26!!.text = "10ⁿ"
-                    button25!!.text = "x²"
-                    button!!.text = "ⁿ√x"
-                } else {
-                    button31!!.let{ button ->
-                        button.background = ColorDrawable(ContextCompat.getColor(context!!, R.color.btnDark))
-                        button.setTextColor(ContextCompat.getColor(context!!, R.color.textColorBtn))
-                    }
-                    button30!!.text = "sin"
-                    button27!!.text = "cos"
-                    button24!!.text = "tan"
-                    button29!!.text = "ln"
-                    button26!!.text = "log"
-                    button25!!.text = "√"
-                    button!!.text = "xⁿ"
+            viewModel.inverse.observe(this, Observer {
+                if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    inverseButton(it)
                 }
-            }
-        })
+            })
+
+            viewModel.degree.observe(this, Observer {
+                radDegButton(it)
+            })
+        }
     }
 
-
     private fun enableButtons(view: View) {
-
-
         val buttons =
             if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
                 listOf<Button>(
-                    view.button!!, view.button1, view.button2, view.button4, view.button5,
+                    view.button!!, view.button1, view.button4, view.button5,
                     view.button6, view.button7, view.button8, view.button9, view.button10,
                     view.button11, view.button12, view.button13, view.button14, view.button15,
                     view.button16, view.button17, view.button18, view.button19, view.button21!!,
@@ -97,7 +76,7 @@ class MainFragment : Fragment() {
                 )
             } else {
                 listOf<Button>(
-                    view.button1, view.button2, view.button4, view.button5,
+                    view.button1, view.button4, view.button5,
                     view.button6, view.button7, view.button8, view.button9, view.button10,
                     view.button11, view.button12, view.button13, view.button14, view.button15,
                     view.button16, view.button17, view.button18, view.button19
@@ -107,77 +86,224 @@ class MainFragment : Fragment() {
 
         buttons.forEach { button ->
             button.setOnClickListener {
-
-                viewModel.currentFormula.value = viewModel.currentFormula.value.orEmpty() +
-                        when (button.text.toString()) {
-                            //This is for the non inverse
-                            "-" -> "-"
-                            "×" -> "*"
-                            "÷" -> "/"
-                            "%" -> "percentage"
-                            "π" -> "PI"
-                            "sin" -> "sin("
-                            "cos" -> "cos("
-                            "tan" -> "tan("
-                            "EXP" -> "E"
-                            "x!" -> ")!"
-                            "ln" -> "ln("
-                            "log" -> "log("
-                            "√" -> "sqrt("
-                            "xⁿ" -> ")^("
-                            //This is for the inverse
-                            "sin⁻¹" -> "sin-1("
-                            "cos⁻¹" -> "cos-1("
-                            "tan⁻¹" -> "tan-1("
-                            "eⁿ" -> "e^("
-                            "10ⁿ" -> "10^("
-                            "x²" -> ")^2"
-                            "ⁿ√x" -> ")root("
-                            //This is the numbers and char that requires no change.
-                            else -> button.text
-                        }
+                if (!button.text.isDigitsOnly()) viewModel.allowDecimal.value = true
+                viewModel.currentFormula.update(buttonTextToGrammar(button.text.toString()))
+                viewModel.displayFormula.update(buttonTextToDisplayText(button.text.toString()))
             }
+        }
+
+        view.button2.setOnClickListener {
+            //This is the button for the decimal point.
+            if (viewModel.allowDecimal.value!!) {
+                viewModel.currentFormula.update(button2.text.toString())
+                viewModel.displayFormula.update(button2.text.toString())
+                viewModel.allowDecimal.value = false
+            }
+
         }
 
         view.button20.let {
             // This is the clear button
             it.setOnClickListener {
-                viewModel.currentFormula.value = viewModel.currentFormula.value!!.dropLast(1)
-                if (viewModel.currentFormula.value.toString().isBlank()) {
+                viewModel.currentFormula.delete()
+                viewModel.displayFormula.delete()
+                if (viewModel.currentFormula.value!!.isEmpty()) {
                     view.calculatorAnswer.text = "0"
                 }
+                viewModel.allowDecimal.value = true
             }
 
             it.setOnLongClickListener {
-                viewModel.currentFormula.value = ""
+                viewModel.currentFormula.clear()
+                viewModel.displayFormula.clear()
                 view.calculatorAnswer.text = "0"
+                viewModel.allowDecimal.value = true
                 return@setOnLongClickListener true
             }
         }
 
         view.button3.setOnClickListener {
             // This is the equals button
-            view.calculatorAnswer.text = CalculatorBrain.calculate(viewModel.currentFormula.value)
+            viewModel.currentAnswer.value =
+                CalculatorBrain.calculate(viewModel.currentFormula.value?.convertAndClean())
         }
 
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            view.button33!!.setOnClickListener {
+            view.button33?.setOnClickListener {
                 //This is the rad button
+                viewModel.degree.value = !viewModel.degree.value!!
             }
 
-            view.button31!!.setOnClickListener {
+            view.button31?.setOnClickListener {
                 //This is the INV button
-                viewModel.inverse.value =
-                    if (viewModel.inverse.value != null) {
-                        !viewModel.inverse.value!!
-                    } else {
-                        true
-                    }
+                viewModel.inverse.value = !viewModel.inverse.value!!
             }
 
-            view.button22!!.setOnClickListener {
+            view.button22?.setOnClickListener {
                 //This is the ANS button
             }
+        }
+    }
+
+    private fun answerDisplayOutput(it: String) {
+        if (it.matches("-?(([0-9]*\\.[0-9]+)|[0-9]+)".toRegex())) {
+            val numberDouble = String.format("%.11f", it.toDouble()).toDouble()
+
+            if ((numberDouble == Math.floor(numberDouble))) {
+                calculatorAnswer.text = numberDouble.toInt().toString()
+            } else {
+                calculatorAnswer.text = numberDouble.toString()
+            }
+        } else {
+            calculatorAnswer.text = it
+        }
+    }
+
+    private fun buttonTextToGrammar(buttonText: String): String {
+        return when (buttonText) {
+            //This is for the non inverse
+            "×" -> "*"
+            "÷" -> "/"
+            "%" -> "percentage"
+            "π" -> "PI"
+            "sin" -> "sin("
+            "cos" -> "cos("
+            "tan" -> "tan("
+            "EXP" -> "E"
+            "x!" -> ")!"
+            "ln" -> "ln("
+            "log" -> "log("
+            "√" -> "sqrt("
+            "xⁿ" -> ")^("
+            //This is for the inverse
+            "sin⁻¹" -> "sin-1("
+            "cos⁻¹" -> "cos-1("
+            "tan⁻¹" -> "tan-1("
+            "eⁿ" -> "e^("
+            "10ⁿ" -> "10^("
+            "x²" -> ")^2"
+            "ⁿ√x" -> ")root("
+            //This is the numbers and char that requires no change.
+            else -> buttonText
+        }
+    }
+
+    private fun buttonTextToDisplayText(buttonText: String): String {
+        return when (buttonText) {
+            //This is for the non inverse
+            "sin" -> "sin("
+            "cos" -> "cos("
+            "tan" -> "tan("
+            "EXP" -> "E"
+            "x!" -> ")!"
+            "ln" -> "ln("
+            "log" -> "log("
+            "√" -> "√("
+            "xⁿ" -> ")^("
+            //This is for the inverse
+            "sin⁻¹" -> "sin⁻¹("
+            "cos⁻¹" -> "cos⁻¹("
+            "tan⁻¹" -> "tan⁻¹("
+            "eⁿ" -> "e^("
+            "10ⁿ" -> "10^("
+            "x²" -> ")^2"
+            "ⁿ√x" -> ")√("
+            //This is the numbers and char that requires no change.
+            else -> buttonText
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun radDegButton(bool: Boolean) {
+        if (bool) {
+            button33?.let { button ->
+                button.background = ColorDrawable(ContextCompat.getColor(context!!, R.color.btnAccent))
+                button.setTextColor(ContextCompat.getColor(context!!, R.color.textColorDarkBtn))
+                button.text = "Deg"
+            }
+
+        } else {
+            button33?.let { button ->
+                button.background = ColorDrawable(ContextCompat.getColor(context!!, R.color.btnDark))
+                button.setTextColor(ContextCompat.getColor(context!!, R.color.textColorBtn))
+                button.text = "Rad"
+            }
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun inverseButton(bool: Boolean) {
+        if (bool) {
+            button31?.let { button ->
+                button.background = ColorDrawable(ContextCompat.getColor(context!!, R.color.btnAccent))
+                button.setTextColor(ContextCompat.getColor(context!!, R.color.textColorDarkBtn))
+            }
+            button30?.text = "sin⁻¹"
+            button27?.text = "cos⁻¹"
+            button24?.text = "tan⁻¹"
+            button29?.text = "eⁿ"
+            button26?.text = "10ⁿ"
+            button25?.text = "x²"
+            button?.text = "ⁿ√x"
+        } else {
+            button31?.let { button ->
+                button.background = ColorDrawable(ContextCompat.getColor(context!!, R.color.btnDark))
+                button.setTextColor(ContextCompat.getColor(context!!, R.color.textColorBtn))
+            }
+            button30?.text = "sin"
+            button27?.text = "cos"
+            button24?.text = "tan"
+            button29?.text = "ln"
+            button26?.text = "log"
+            button25?.text = "√"
+            button?.text = "xⁿ"
+        }
+    }
+
+    private fun List<String>.convertAndClean(): String {
+        val radOrDegree =
+            if (viewModel.degree.value!!){
+                this.toString()
+                    .replace("sin(", "sin(PI/180*")
+                    .replace("cos(", "cos(PI/180*")
+                    .replace("tan(", "tan(PI/180*")
+                    .replace("sin-1(", "sin-1(PI/180*")
+                    .replace("cos-1(", "cos-1(PI/180*")
+                    .replace("tan-1(", "tan-1(PI/180*")
+            }else{
+                this.toString()
+                    .replace("sin(PI/180*", "sin(")
+                    .replace("cos(PI/180*", "cos(")
+                    .replace("tan(PI/180*", "tan(")
+                    .replace("sin-1(PI/180*", "sin-1(")
+                    .replace("cos-1(PI/180*", "cos-1(")
+                    .replace("tan-1(PI/180*", "tan-1(")
+            }
+        return radOrDegree.replace(" ", "").replace(",", "").dropLast(1).drop(1)
+    }
+
+
+    private fun List<String>.cleanListToString(): String {
+        return this.toString().replace(" ", "").replace(",", "").dropLast(1).drop(1)
+    }
+
+    private fun MutableLiveData<MutableList<String>>.update(newVal: String) {
+        this.value?.add(newVal)
+        this.value = this.value
+    }
+
+    private fun MutableLiveData<MutableList<String>>.delete() {
+        if (!this.value.isNullOrEmpty()) {
+            this.value?.removeAt(this.value!!.lastIndex)
+            this.value = this.value
+        }
+
+    }
+
+    private fun MutableLiveData<MutableList<String>>.clear() {
+        if (!this.value.isNullOrEmpty()) {
+            this.value?.clear()
+            this.value = this.value
         }
     }
 }

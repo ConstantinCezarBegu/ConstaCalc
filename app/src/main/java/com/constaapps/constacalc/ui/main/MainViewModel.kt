@@ -4,15 +4,24 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class MainViewModel : ViewModel() {
-    val currentFormula: MutableLiveData<String> by lazy {
-        MutableLiveData<String>()
-    }
+
+    val currentFormula = MutableLiveData<MutableList<String>>().apply { value = mutableListOf() }
+    val displayFormula = MutableLiveData<MutableList<String>>().apply { value = mutableListOf() }
 
     val currentAnswer: MutableLiveData<String> by lazy {
-        MutableLiveData<String>()
+        MutableLiveData<String>().apply { this.value = "0" }
     }
 
     val inverse: MutableLiveData<Boolean> by lazy {
-        MutableLiveData<Boolean>()
+        MutableLiveData<Boolean>().apply { this.value = false }
     }
+
+    val allowDecimal: MutableLiveData<Boolean> by lazy {
+        MutableLiveData<Boolean>().apply { this.value = true }
+    }
+
+    val degree: MutableLiveData<Boolean> by lazy {
+        MutableLiveData<Boolean>().apply { this.value = false }
+    }
+
 }

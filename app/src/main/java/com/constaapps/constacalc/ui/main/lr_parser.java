@@ -1021,7 +1021,7 @@ public abstract class lr_parser {
       // BUG Fix by Bruce Hutton
       // Computer Science Department, University of Auckland,
       // Auckland, New Zealand. [applied 5-sep-1999 by csa]
-      // The following two lines were out of order!!
+      // The following two lines were out of order?
       lookahead[error_sync_size()-1] = cur_token;
       cur_token = scan();
 
