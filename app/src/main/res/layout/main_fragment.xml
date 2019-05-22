@@ -31,7 +31,7 @@
                 app:layout_constraintStart_toStartOf="@+id/calculatorAnswer"
                 app:layout_constraintEnd_toEndOf="@+id/calculatorAnswer"
                 app:layout_constraintBottom_toTopOf="@+id/calculatorAnswer"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp" android:id="@+id/nestedScrollView">
 
 
             <TextView
@@ -49,8 +49,24 @@
                 android:layout_marginEnd="16dp"
                 app:layout_constraintBottom_toBottomOf="parent" android:layout_marginBottom="24dp"
                 android:textColor="@color/textColorBtn" android:textSize="36sp" android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="50dp" android:gravity="end"
-                android:text="0"/>
+                android:gravity="end"
+                android:text="0" app:layout_constraintStart_toEndOf="@+id/imageView"
+                android:layout_marginStart="16dp"/>
+        <ImageView
+                android:src="@android:drawable/ic_menu_always_landscape_portrait"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/imageView" app:layout_constraintEnd_toStartOf="@+id/calculatorAnswer"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/nestedScrollView" android:layout_marginStart="16dp"
+        />
+        <ImageView
+                android:src="@android:drawable/ic_menu_recent_history"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/imageView2" app:layout_constraintEnd_toEndOf="@+id/imageView"
+                app:layout_constraintStart_toStartOf="@+id/imageView"
+                app:layout_constraintBottom_toBottomOf="@+id/calculatorAnswer"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
     <Button
             android:layout_width="0dp"
@@ -255,16 +271,14 @@
             app:layout_constraintTop_toTopOf="@+id/button17" app:layout_constraintBottom_toBottomOf="@+id/button17"
             app:layout_constraintStart_toEndOf="@+id/button18" app:layout_constraintEnd_toStartOf="@+id/button20"
             android:layout_marginEnd="1dp"/>
-    <Button
-            android:text="ac"
+    <androidx.appcompat.widget.AppCompatImageButton
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:textColor="@color/textColorBtn"
             android:id="@+id/button20"
             android:background="@color/btnDark"
             app:layout_constraintTop_toTopOf="@+id/button17" app:layout_constraintBottom_toBottomOf="@+id/button17"
             app:layout_constraintStart_toEndOf="@+id/button19" app:layout_constraintEnd_toEndOf="@+id/button4"
-    />
+            android:src="@android:drawable/ic_input_delete" android:tint="@color/textColorBtn"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
