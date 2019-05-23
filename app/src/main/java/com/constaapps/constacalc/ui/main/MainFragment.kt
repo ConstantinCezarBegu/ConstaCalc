@@ -1,6 +1,7 @@
 package com.constaapps.constacalc.ui.main
 
 import android.annotation.SuppressLint
+import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -42,7 +43,7 @@ class MainFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
-        viewModel.let {viewModel ->
+        viewModel.let { viewModel ->
             viewModel.displayFormula.observe(this, Observer {
                 calculatorFormula.text = it.cleanListToString()
             })
@@ -102,7 +103,7 @@ class MainFragment : Fragment() {
 
         }
 
-        view.button8.let {button ->
+        view.button8.let { button ->
             // This is the minus button
             button.setOnClickListener {
                 viewModel.currentFormula.update(buttonTextToGrammar("-"))
@@ -156,6 +157,15 @@ class MainFragment : Fragment() {
 
             view.button22?.setOnClickListener {
                 //This is the ANS button
+            }
+
+            view.imageView_portrait.setOnClickListener {
+                activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
+        }
+        else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            view.imageView_portrait.setOnClickListener {
+                activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             }
         }
     }
@@ -282,7 +292,7 @@ class MainFragment : Fragment() {
 
     private fun List<String>.convertAndClean(): String {
         val radOrDegree =
-            if (viewModel.degree.value!!){
+            if (viewModel.degree.value!!) {
                 this.toString()
                     .replace("sin(", "sdeg(")
                     .replace("cos(", "cdeg(")
@@ -290,7 +300,7 @@ class MainFragment : Fragment() {
                     .replace("sin-1(", "s-1deg(")
                     .replace("cos-1(", "c-1deg(")
                     .replace("tan-1(", "t-1deg(")
-            }else{
+            } else {
                 this.toString()
                     .replace("sdeg(", "sin(")
                     .replace("cdeg(", "cos(")

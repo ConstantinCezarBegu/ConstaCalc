@@ -50,13 +50,13 @@
                 app:layout_constraintBottom_toBottomOf="parent" android:layout_marginBottom="24dp"
                 android:textColor="@color/textColorBtn" android:textSize="36sp" android:textStyle="bold"
                 android:gravity="end"
-                android:text="0" app:layout_constraintStart_toEndOf="@+id/imageView"
+                android:text="0" app:layout_constraintStart_toEndOf="@+id/imageView_portrait"
                 android:layout_marginStart="16dp"/>
         <ImageView
                 android:src="@android:drawable/ic_menu_always_landscape_portrait"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/imageView" app:layout_constraintEnd_toStartOf="@+id/calculatorAnswer"
+                android:id="@+id/imageView_portrait" app:layout_constraintEnd_toStartOf="@+id/calculatorAnswer"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/nestedScrollView" android:layout_marginStart="16dp"
         />
@@ -64,9 +64,10 @@
                 android:src="@android:drawable/ic_menu_recent_history"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/imageView2" app:layout_constraintEnd_toEndOf="@+id/imageView"
-                app:layout_constraintStart_toStartOf="@+id/imageView"
+                android:id="@+id/imageView2" app:layout_constraintEnd_toEndOf="@+id/imageView_portrait"
+                app:layout_constraintStart_toStartOf="@+id/imageView_portrait"
                 app:layout_constraintBottom_toBottomOf="@+id/calculatorAnswer"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
     <Button
             android:layout_width="0dp"
