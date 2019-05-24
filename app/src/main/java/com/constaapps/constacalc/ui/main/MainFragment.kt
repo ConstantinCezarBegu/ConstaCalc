@@ -18,15 +18,16 @@ import androidx.lifecycle.ViewModelProviders
 import com.constaapps.constacalc.R
 import kotlinx.android.synthetic.main.main_fragment.*
 import kotlinx.android.synthetic.main.main_fragment.view.*
+import org.koin.android.viewmodel.ext.android.getViewModel
 
 
 class MainFragment : Fragment() {
 
+    private lateinit var viewModel: MainViewModel
+
     companion object {
         fun newInstance() = MainFragment()
     }
-
-    private lateinit var viewModel: MainViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,7 +43,7 @@ class MainFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
+        viewModel = getViewModel()
         viewModel.let { viewModel ->
             viewModel.displayFormula.observe(this, Observer {
                 calculatorFormula.text = it.cleanListToString()
