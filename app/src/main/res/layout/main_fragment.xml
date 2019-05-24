@@ -64,7 +64,7 @@
                 android:src="@android:drawable/ic_menu_recent_history"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/imageView2" app:layout_constraintEnd_toEndOf="@+id/imageView_portrait"
+                android:id="@+id/historyImageView" app:layout_constraintEnd_toEndOf="@+id/imageView_portrait"
                 app:layout_constraintStart_toStartOf="@+id/imageView_portrait"
                 app:layout_constraintBottom_toBottomOf="@+id/calculatorAnswer"/>
 

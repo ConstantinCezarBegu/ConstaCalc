@@ -33,6 +33,8 @@ dependencies {
     kapt "androidx.room:room-compiler:2.1.0-beta01"
     // Koin implementation
     implementation 'org.koin:koin-android-viewmodel:1.0.0'
+    // Material buttons.
+    implementation 'com.android.support:design:28.0.0'
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"

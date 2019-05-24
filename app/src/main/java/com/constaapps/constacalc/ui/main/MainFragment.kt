@@ -1,6 +1,7 @@
 package com.constaapps.constacalc.ui.main
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.drawable.ColorDrawable
@@ -143,6 +144,11 @@ class MainFragment : Fragment() {
             // This is the equals button
             viewModel.currentAnswer.value =
                 CalculatorBrain.calculate(viewModel.currentFormula.value?.convertAndClean())
+        }
+
+        view.historyImageView.setOnClickListener {
+            // THis is
+
         }
 
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -337,4 +343,6 @@ class MainFragment : Fragment() {
             this.value = this.value
         }
     }
+
+
 }
