@@ -1,7 +1,6 @@
 package com.constaapps.constacalc.ui.main
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.drawable.ColorDrawable
@@ -15,7 +14,6 @@ import androidx.core.text.isDigitsOnly
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import com.constaapps.constacalc.R
 import kotlinx.android.synthetic.main.main_fragment.*
 import kotlinx.android.synthetic.main.main_fragment.view.*
@@ -147,8 +145,8 @@ class MainFragment : Fragment() {
         }
 
         view.historyImageView.setOnClickListener {
-            // THis is
-
+            // THis is the history button
+            switchHistorryButtons()
         }
 
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -164,6 +162,7 @@ class MainFragment : Fragment() {
 
             view.button22?.setOnClickListener {
                 //This is the ANS button
+
             }
 
             view.imageView_portrait.setOnClickListener {
@@ -344,5 +343,17 @@ class MainFragment : Fragment() {
         }
     }
 
+    private fun switchHistorryButtons () {
+        if (!viewModel.historyDisplay.value!!){
+            buttons.visibility = View.GONE
+            history.visibility = View.VISIBLE
+
+        }else{
+            buttons.visibility = View.VISIBLE
+            history.visibility = View.GONE
+        }
+
+        viewModel.historyDisplay.value = !viewModel.historyDisplay.value!!
+    }
 
 }

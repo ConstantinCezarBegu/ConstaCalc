@@ -34,6 +34,10 @@ class MainViewModel(private val historyDao: HistoryDao) : ViewModel(), Coroutine
         MutableLiveData<Boolean>().apply { this.value = false }
     }
 
+    val historyDisplay: MutableLiveData<Boolean> by lazy {
+        MutableLiveData<Boolean>().apply { this.value = false }
+    }
+
     fun getAllHistory(): LiveData<List<HistoryEntity>> {
         return historyDao.findAll()
     }
