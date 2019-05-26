@@ -5,6 +5,7 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +15,11 @@ import androidx.core.text.isDigitsOnly
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.constaapps.constacalc.R
+import com.constaapps.constacalc.db.historyTable.HistoryEntity
+import com.constaapps.constacalc.recyclerview.HistoryRecyclerViewAdapter
 import kotlinx.android.synthetic.main.main_fragment.*
 import kotlinx.android.synthetic.main.main_fragment.view.*
 import org.koin.android.viewmodel.ext.android.getViewModel
@@ -22,6 +27,7 @@ import org.koin.android.viewmodel.ext.android.getViewModel
 
 class MainFragment : Fragment() {
 
+    private lateinit var historyRecyclerViewAdapter: HistoryRecyclerViewAdapter
     private lateinit var viewModel: MainViewModel
 
     companion object {
@@ -37,6 +43,7 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        view.historyRecyclerView?.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         enableButtons(view)
     }
 
@@ -48,7 +55,7 @@ class MainFragment : Fragment() {
                 calculatorFormula.text = it.cleanListToString()
             })
             viewModel.currentAnswer.observe(this, Observer {
-                answerDisplayOutput(it)
+                calculatorAnswer.text = answerDisplayOutput(it)
             })
 
             viewModel.inverse.observe(this, Observer {
@@ -59,6 +66,11 @@ class MainFragment : Fragment() {
 
             viewModel.degree.observe(this, Observer {
                 radDegButton(it)
+            })
+
+            historyRecyclerViewAdapter = HistoryRecyclerViewAdapter().also(historyRecyclerView::setAdapter)
+            viewModel.getAllHistory().observe(viewLifecycleOwner, Observer {
+                historyRecyclerViewAdapter.submitList(it)
             })
         }
     }
@@ -140,13 +152,24 @@ class MainFragment : Fragment() {
 
         view.button3.setOnClickListener {
             // This is the equals button
-            viewModel.currentAnswer.value =
-                CalculatorBrain.calculate(viewModel.currentFormula.value?.convertAndClean())
+            val formulaDisplay = viewModel.displayFormula.value?.convertAndClean()!!
+            val answer = CalculatorBrain.calculate(viewModel.currentFormula.value?.convertAndClean())
+
+            viewModel.let {
+                it.currentAnswer.value = answer
+                it.saveHistory(HistoryEntity(formulaDisplay, answerDisplayOutput(answer.toString())))
+            }
+
+
         }
 
         view.historyImageView.setOnClickListener {
             // THis is the history button
-            switchHistorryButtons()
+            switchHistoryButtons()
+        }
+
+        view.clearBtn.setOnClickListener {
+            viewModel.deleteAll()
         }
 
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -176,17 +199,17 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun answerDisplayOutput(it: String) {
-        if (it.matches("-?(([0-9]*\\.[0-9]+)|[0-9]+)".toRegex())) {
+    private fun answerDisplayOutput(it: String): String {
+        return if (it.matches("-?(([0-9]*\\.[0-9]+)|[0-9]+)".toRegex())) {
             val numberDouble = String.format("%.11f", it.toDouble()).toDouble()
 
             if ((numberDouble == Math.floor(numberDouble))) {
-                calculatorAnswer.text = numberDouble.toInt().toString()
+                numberDouble.toInt().toString()
             } else {
-                calculatorAnswer.text = numberDouble.toString()
+                numberDouble.toString()
             }
         } else {
-            calculatorAnswer.text = it
+            it
         }
     }
 
@@ -343,7 +366,7 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun switchHistorryButtons () {
+    private fun switchHistoryButtons () {
         if (!viewModel.historyDisplay.value!!){
             buttons.visibility = View.GONE
             history.visibility = View.VISIBLE
