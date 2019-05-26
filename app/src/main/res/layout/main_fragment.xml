@@ -78,7 +78,8 @@
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/guideline" app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" android:animateLayoutChanges="false">
+            app:layout_constraintStart_toStartOf="parent" android:animateLayoutChanges="false"
+            android:visibility="gone">
         <Button
                 android:layout_width="0dp"
                 android:layout_height="0dp"
@@ -298,12 +299,13 @@
             android:layout_height="0dp"
             app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/guideline" app:layout_constraintBottom_toBottomOf="parent"
-            android:id="@+id/history" android:visibility="gone" android:animateLayoutChanges="false">
+            android:id="@+id/history" android:visibility="visible" android:animateLayoutChanges="false">
 
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" android:background="@color/colorPrimary">>
+                android:layout_height="match_parent" android:background="@color/colorPrimary"><![CDATA[>
+            ]]>
             <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
@@ -325,6 +327,15 @@
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                    android:text="No history"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/textNoHistory" app:layout_constraintEnd_toEndOf="@+id/historyRecyclerView"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
+                    app:layout_constraintBottom_toBottomOf="parent" android:textColor="@color/textColorAccent"
+                    android:textStyle="bold" android:textSize="24sp"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 

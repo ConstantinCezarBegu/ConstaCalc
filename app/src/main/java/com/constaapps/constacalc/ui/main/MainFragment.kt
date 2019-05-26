@@ -71,6 +71,7 @@ class MainFragment : Fragment() {
             historyRecyclerViewAdapter = HistoryRecyclerViewAdapter().also(historyRecyclerView::setAdapter)
             viewModel.getAllHistory().observe(viewLifecycleOwner, Observer {
                 historyRecyclerViewAdapter.submitList(it)
+                showNoHistoryLog(it.size)
             })
         }
     }
@@ -377,6 +378,12 @@ class MainFragment : Fragment() {
         }
 
         viewModel.historyDisplay.value = !viewModel.historyDisplay.value!!
+    }
+
+
+    private fun showNoHistoryLog(adapterSize: Int) {
+        if (adapterSize == 0) textNoHistory.visibility = View.VISIBLE
+        else textNoHistory.visibility = View.GONE
     }
 
 }
