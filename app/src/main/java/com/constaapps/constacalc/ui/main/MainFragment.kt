@@ -5,7 +5,6 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,13 +12,13 @@ import android.widget.Button
 import androidx.core.content.ContextCompat
 import androidx.core.text.isDigitsOnly
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.constaapps.constacalc.R
 import com.constaapps.constacalc.db.historyTable.HistoryEntity
 import com.constaapps.constacalc.recyclerview.HistoryRecyclerViewAdapter
+import com.constaapps.constacalc.util.*
 import kotlinx.android.synthetic.main.main_fragment.*
 import kotlinx.android.synthetic.main.main_fragment.view.*
 import org.koin.android.viewmodel.ext.android.getViewModel
@@ -68,7 +67,7 @@ class MainFragment : Fragment() {
                 radDegButton(it)
             })
 
-            historyRecyclerViewAdapter = HistoryRecyclerViewAdapter().also(historyRecyclerView::setAdapter)
+            historyRecyclerViewAdapter = HistoryRecyclerViewAdapter(viewModel).also(historyRecyclerView::setAdapter)
             viewModel.getAllHistory().observe(viewLifecycleOwner, Observer {
                 historyRecyclerViewAdapter.submitList(it)
                 showNoHistoryLog(it.size)
@@ -153,8 +152,8 @@ class MainFragment : Fragment() {
 
         view.button3.setOnClickListener {
             // This is the equals button
-            val formulaDisplay = viewModel.displayFormula.value?.convertAndClean()!!
-            val answer = CalculatorBrain.calculate(viewModel.currentFormula.value?.convertAndClean())
+            val formulaDisplay = viewModel.displayFormula.value?.convertAndClean(viewModel)!!
+            val answer = CalculatorBrain.calculate(viewModel.currentFormula.value?.convertAndClean(viewModel))
 
             viewModel.let {
                 it.currentAnswer.value = answer
@@ -317,53 +316,6 @@ class MainFragment : Fragment() {
             button26?.text = "log"
             button25?.text = "√"
             button?.text = "xⁿ"
-        }
-    }
-
-    private fun List<String>.convertAndClean(): String {
-        val radOrDegree =
-            if (viewModel.degree.value!!) {
-                this.toString()
-                    .replace("sin(", "sdeg(")
-                    .replace("cos(", "cdeg(")
-                    .replace("tan(", "tdeg(")
-                    .replace("sin-1(", "s-1deg(")
-                    .replace("cos-1(", "c-1deg(")
-                    .replace("tan-1(", "t-1deg(")
-            } else {
-                this.toString()
-                    .replace("sdeg(", "sin(")
-                    .replace("cdeg(", "cos(")
-                    .replace("tdeg(", "tan(")
-                    .replace("s-1deg(", "sin-1(")
-                    .replace("c-1deg(", "cos-1(")
-                    .replace("t-1deg(", "tan-1(")
-            }
-        return radOrDegree.replace(" ", "").replace(",", "").dropLast(1).drop(1)
-    }
-
-
-    private fun List<String>.cleanListToString(): String {
-        return this.toString().replace(" ", "").replace(",", "").dropLast(1).drop(1)
-    }
-
-    private fun MutableLiveData<MutableList<String>>.update(newVal: String) {
-        this.value?.add(newVal)
-        this.value = this.value
-    }
-
-    private fun MutableLiveData<MutableList<String>>.delete() {
-        if (!this.value.isNullOrEmpty()) {
-            this.value?.removeAt(this.value!!.lastIndex)
-            this.value = this.value
-        }
-
-    }
-
-    private fun MutableLiveData<MutableList<String>>.clear() {
-        if (!this.value.isNullOrEmpty()) {
-            this.value?.clear()
-            this.value = this.value
         }
     }
 

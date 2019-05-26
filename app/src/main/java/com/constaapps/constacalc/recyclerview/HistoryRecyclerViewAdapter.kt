@@ -9,10 +9,12 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.constaapps.constacalc.R
 import com.constaapps.constacalc.db.historyTable.HistoryEntity
+import com.constaapps.constacalc.ui.main.MainViewModel
+import com.constaapps.constacalc.util.update
 import kotlinx.android.synthetic.main.layout_list_history_item.view.*
 
 
-class HistoryRecyclerViewAdapter :
+class HistoryRecyclerViewAdapter (private val mainViewModel: MainViewModel) :
     ListAdapter<HistoryEntity, RecyclerView.ViewHolder>(diffCallback) {
 
     companion object {
@@ -53,6 +55,10 @@ class HistoryRecyclerViewAdapter :
             with(itemView) {
                 formulaText.text = historyEntity.formula
                 answerText.text = historyEntity.answer
+                itemView.setOnClickListener {
+                    mainViewModel.currentFormula.update(answerText.text.toString())
+                    mainViewModel.displayFormula.update(answerText.text.toString())
+                }
             }
         }
     }
