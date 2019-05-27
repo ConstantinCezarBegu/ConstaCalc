@@ -52,6 +52,7 @@ class MainFragment : Fragment() {
         switchHistoryButtons(false)
         viewModel.let { viewModel ->
             viewModel.displayFormula.observe(this, Observer {
+                viewModel.allowEquals = true
                 calculatorFormula.text = it.cleanListToString()
             })
             viewModel.currentAnswer.observe(this, Observer {
@@ -100,7 +101,7 @@ class MainFragment : Fragment() {
 
         buttons.forEach { button ->
             button.setOnClickListener {
-                if (!button.text.isDigitsOnly()) viewModel.allowDecimal.value = true
+                if (!button.text.isDigitsOnly()) viewModel.allowDecimal = true
                 viewModel.grammarFormula.update(buttonTextToGrammar(button.text.toString()))
                 viewModel.displayFormula.update(buttonTextToDisplayText(button.text.toString()))
             }
@@ -108,10 +109,10 @@ class MainFragment : Fragment() {
 
         view.button2.setOnClickListener {
             //This is the button for the decimal point.
-            if (viewModel.allowDecimal.value!!) {
+            if (viewModel.allowDecimal) {
                 viewModel.grammarFormula.update(button2.text.toString())
                 viewModel.displayFormula.update(button2.text.toString())
-                viewModel.allowDecimal.value = false
+                viewModel.allowDecimal = false
             }
 
         }
@@ -119,6 +120,7 @@ class MainFragment : Fragment() {
         view.button8.let { button ->
             // This is the minus button
             button.setOnClickListener {
+                viewModel.allowDecimal = true
                 viewModel.grammarFormula.update(buttonTextToGrammar("-"))
                 viewModel.displayFormula.update(buttonTextToDisplayText("-"))
             }
@@ -139,35 +141,38 @@ class MainFragment : Fragment() {
                 if (viewModel.grammarFormula.value!!.isEmpty()) {
                     view.calculatorAnswer.text = "0"
                 }
-                viewModel.allowDecimal.value = true
+                viewModel.allowDecimal = true
             }
 
             it.setOnLongClickListener {
                 viewModel.grammarFormula.clear()
                 viewModel.displayFormula.clear()
                 view.calculatorAnswer.text = "0"
-                viewModel.allowDecimal.value = true
+                viewModel.allowDecimal = true
                 return@setOnLongClickListener true
             }
         }
 
         view.button3.setOnClickListener {
             // This is the equals button
-            val displayFormula = viewModel.displayFormula.value
-            if(!displayFormula.isNullOrEmpty()){
-                val formulaDisplay = displayFormula.convertAndClean(viewModel)
-                val answer = CalculatorBrain.calculate(viewModel.grammarFormula.value?.convertAndClean(viewModel))
+            if (viewModel.allowEquals) {
+                val displayFormula = viewModel.displayFormula.value
+                if (!displayFormula.isNullOrEmpty()) {
+                    val formulaDisplay = displayFormula.convertAndClean(viewModel)
+                    val answer = CalculatorBrain.calculate(viewModel.grammarFormula.value?.convertAndClean(viewModel))
 
-                viewModel.let {
-                    it.currentAnswer.value = answer
-                    it.saveHistory(
-                        HistoryEntity(
-                            formulaDisplay,
-                            answerDisplayOutput(answer.toString()),
-                            answer.matches("-?((\\d*\\.\\d+)|\\d+\\.?)(E\\d+)?".toRegex())
+                    viewModel.let {
+                        it.currentAnswer.value = answer
+                        it.saveHistory(
+                            HistoryEntity(
+                                formulaDisplay,
+                                answerDisplayOutput(answer.toString()),
+                                answer.matches("-?((\\d*\\.\\d+)|\\d+\\.?)(E\\d+)?".toRegex())
+                            )
                         )
-                    )
+                    }
                 }
+                viewModel.allowEquals = false
             }
         }
 
@@ -241,6 +246,7 @@ class MainFragment : Fragment() {
 
             "√" -> smartRoot("root(", "sqrt(")
             // These are the functions
+            "(" -> smartFunction("(")
             "sin" -> smartFunction("sin(")
             "cos" -> smartFunction("cos(")
             "tan" -> smartFunction("tan(")
@@ -381,8 +387,8 @@ class MainFragment : Fragment() {
     }
 
     private fun switchHistoryButtons(switch: Boolean) {
-        if (switch) viewModel.historyDisplay.value = !viewModel.historyDisplay.value!!
-        if (viewModel.historyDisplay.value!!) {
+        if (switch) viewModel.historyDisplay = !viewModel.historyDisplay
+        if (viewModel.historyDisplay) {
             buttons.visibility = View.GONE
             history.visibility = View.VISIBLE
 

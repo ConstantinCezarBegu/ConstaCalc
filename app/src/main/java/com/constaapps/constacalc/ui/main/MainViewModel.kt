@@ -13,6 +13,10 @@ class MainViewModel(private val historyDao: HistoryDao) : ViewModel(), Coroutine
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default
 
+    var allowEquals = false
+    var allowDecimal = true
+    var historyDisplay = false
+
     val grammarFormula = MutableLiveData<MutableList<String>>().apply { value = mutableListOf() }
     val displayFormula = MutableLiveData<MutableList<String>>().apply { value = mutableListOf() }
 
@@ -20,19 +24,11 @@ class MainViewModel(private val historyDao: HistoryDao) : ViewModel(), Coroutine
         MutableLiveData<String>().apply { this.value = "0" }
     }
 
-    val inverse: MutableLiveData<Boolean> by lazy {
-        MutableLiveData<Boolean>().apply { this.value = false }
-    }
-
-    val allowDecimal: MutableLiveData<Boolean> by lazy {
-        MutableLiveData<Boolean>().apply { this.value = true }
-    }
-
     val degree: MutableLiveData<Boolean> by lazy {
         MutableLiveData<Boolean>().apply { this.value = false }
     }
 
-    val historyDisplay: MutableLiveData<Boolean> by lazy {
+    val inverse: MutableLiveData<Boolean> by lazy {
         MutableLiveData<Boolean>().apply { this.value = false }
     }
 
