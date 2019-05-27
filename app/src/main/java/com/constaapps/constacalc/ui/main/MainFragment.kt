@@ -66,6 +66,7 @@ class MainFragment : Fragment() {
             })
 
             viewModel.degree.observe(this, Observer {
+                viewModel.allowEquals = true
                 radDegButton(it)
             })
 
@@ -74,6 +75,25 @@ class MainFragment : Fragment() {
                 historyRecyclerViewAdapter.submitList(it)
                 showNoHistoryLog(it.size)
             })
+        }
+    }
+
+    private fun smartHistory(historyString: String, grammarOrDisplay: Boolean): String {
+        val grammarFormula = if (grammarOrDisplay) viewModel.grammarFormula.value
+        else viewModel.displayFormula.value
+        return if (grammarFormula != null) {
+            if (grammarFormula.isNotEmpty()) {
+                val last = grammarFormula.last()
+                if (last.isNumber() || last == ")" || last == if(grammarOrDisplay)"percentage" else "%") {
+                    if(grammarOrDisplay)"*$historyString" else "×$historyString"
+                } else {
+                    historyString
+                }
+            } else {
+                historyString
+            }
+        } else {
+            ""
         }
     }
 
@@ -196,8 +216,8 @@ class MainFragment : Fragment() {
 
                 if (!validHistory.isNullOrEmpty()) {
                     val latest = validHistory.first().answer
-                    viewModel.grammarFormula.update(latest)
-                    viewModel.displayFormula.update(latest)
+                    viewModel.grammarFormula.update(smartHistory(latest, true))
+                    viewModel.displayFormula.update(smartHistory(latest, false))
                 }
 
 
@@ -271,7 +291,8 @@ class MainFragment : Fragment() {
     }
 
     private fun smartRoot(root: String, sqrt: String): String {
-        val formula = if (root == "√(") {
+        val isDisplay = root == "√("
+        val formula = if (isDisplay) {
             viewModel.displayFormula.value!!
         } else {
             viewModel.grammarFormula.value!!
@@ -280,8 +301,8 @@ class MainFragment : Fragment() {
             val last = formula.last()
             when {
                 last.isNumber() -> root
-                last == ")" -> "*$sqrt"
-                last == "percentage" ->"*$sqrt"
+                last == ")" -> "${if(isDisplay) "×" else "*"}$sqrt"
+                last == "percentage" ->"${if(isDisplay) "×" else "*"}$sqrt"
                 else -> sqrt
             }
         } else {
