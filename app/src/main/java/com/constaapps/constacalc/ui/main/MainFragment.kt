@@ -269,7 +269,7 @@ class MainFragment : Fragment() {
         return if (formula.isNotEmpty()) {
             val last = formula.last()
             when {
-                isNumber(last) -> root
+                last.isNumber() -> root
                 last == ")" -> "*$sqrt"
                 else -> sqrt
             }
@@ -283,12 +283,12 @@ class MainFragment : Fragment() {
         return if (grammarFormula.isNotEmpty()) {
             val last = grammarFormula.last()
             if (string == "PI" || string == "e") {
-                if (isNumber(last)) {
+                if (last.isNumber()) {
                     "*$string"
                 } else {
                     string
                 }
-            } else if (isNumber(string) || string == ".") {
+            } else if (string.isNumber() || string == ".") {
                 if (last == ")" || last == "percentage" || last == "PI" || last == "e") {
                     "*$string"
                 } else {
@@ -306,15 +306,11 @@ class MainFragment : Fragment() {
         val grammarFormula = viewModel.grammarFormula.value!!
         return if (grammarFormula.isNotEmpty()) {
             val last = grammarFormula.last()
-            if (isNumber(last)) "*$string" else string
+            if (last.isNumber()) "*$string" else string
         } else {
             string
         }
 
-    }
-
-    private fun isNumber(string: String): Boolean {
-        return string.matches("-?((\\d*\\.\\d+)|\\d+\\.?)(E\\d+)?".toRegex()) || string == "PI" || string == "e" || string == "*PI" || string == "*e"
     }
 
     private fun buttonTextToDisplayText(buttonText: String): String {

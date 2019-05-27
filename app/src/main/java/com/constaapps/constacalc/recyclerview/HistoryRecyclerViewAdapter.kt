@@ -1,20 +1,20 @@
 package com.constaapps.constacalc.recyclerview
 
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.constaapps.constacalc.R
 import com.constaapps.constacalc.db.historyTable.HistoryEntity
 import com.constaapps.constacalc.ui.main.MainViewModel
+import com.constaapps.constacalc.util.inflate
+import com.constaapps.constacalc.util.isNumber
 import com.constaapps.constacalc.util.update
 import kotlinx.android.synthetic.main.layout_list_history_item.view.*
 
 
-class HistoryRecyclerViewAdapter (private val mainViewModel: MainViewModel) :
+class HistoryRecyclerViewAdapter(private val mainViewModel: MainViewModel) :
     ListAdapter<HistoryEntity, RecyclerView.ViewHolder>(diffCallback) {
 
     companion object {
@@ -59,20 +59,33 @@ class HistoryRecyclerViewAdapter (private val mainViewModel: MainViewModel) :
                 answerText.text = stringAnswer
                 itemView.setOnClickListener {
                     if (historyEntity.isValid) {
-                        mainViewModel.grammarFormula.update(stringAnswer)
-                        mainViewModel.displayFormula.update(stringAnswer)
+                        mainViewModel.grammarFormula.update(smartHistory(stringAnswer, true))
+                        mainViewModel.displayFormula.update(smartHistory(stringAnswer, false))
                     }
                 }
+            }
+
+
+        }
+
+        private fun smartHistory(historyString: String, grammarOrDisplay: Boolean): String {
+            val grammarFormula = if (grammarOrDisplay) mainViewModel.grammarFormula.value
+            else mainViewModel.displayFormula.value
+            return if (grammarFormula != null) {
+                if (grammarFormula.isNotEmpty()) {
+                    val last = grammarFormula.last()
+                    if (last.isNumber() || last == ")" || last == if(grammarOrDisplay)"percentage" else "%") {
+                        if(grammarOrDisplay)"*$historyString" else "×$historyString"
+                    } else {
+                        historyString
+                    }
+                } else {
+                    historyString
+                }
+            } else {
+                ""
             }
         }
     }
 }
 
-
-fun ViewGroup.inflate(
-    @LayoutRes layoutId: Int,
-    inflater: LayoutInflater = LayoutInflater.from(context),
-    attachToRoot: Boolean = false
-): View {
-    return inflater.inflate(layoutId, this, attachToRoot)
-}

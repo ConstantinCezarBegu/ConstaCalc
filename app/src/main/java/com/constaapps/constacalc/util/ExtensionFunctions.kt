@@ -1,6 +1,9 @@
 package com.constaapps.constacalc.util
 
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.annotation.LayoutRes
 import androidx.lifecycle.MutableLiveData
 import com.constaapps.constacalc.ui.main.MainViewModel
 
@@ -51,3 +54,16 @@ fun MutableLiveData<MutableList<String>>.clear() {
     }
 }
 
+
+fun ViewGroup.inflate(
+    @LayoutRes layoutId: Int,
+    inflater: LayoutInflater = LayoutInflater.from(context),
+    attachToRoot: Boolean = false
+): View {
+    return inflater.inflate(layoutId, this, attachToRoot)
+}
+
+
+fun String.isNumber(): Boolean {
+    return this.matches("-?((\\d*\\.\\d+)|\\d+\\.?)(E\\d+)?".toRegex()) || this == "PI" || this == "e" || this == "*PI" || this == "*e"
+}
