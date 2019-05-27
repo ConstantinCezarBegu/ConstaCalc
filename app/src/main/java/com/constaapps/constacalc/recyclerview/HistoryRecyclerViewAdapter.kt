@@ -59,7 +59,7 @@ class HistoryRecyclerViewAdapter (private val mainViewModel: MainViewModel) :
                 answerText.text = stringAnswer
                 itemView.setOnClickListener {
                     if (historyEntity.isValid) {
-                        mainViewModel.currentFormula.update(stringAnswer)
+                        mainViewModel.grammarFormula.update(stringAnswer)
                         mainViewModel.displayFormula.update(stringAnswer)
                     }
                 }

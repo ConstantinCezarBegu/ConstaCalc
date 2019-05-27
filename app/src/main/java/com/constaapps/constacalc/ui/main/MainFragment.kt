@@ -100,7 +100,7 @@ class MainFragment : Fragment() {
         buttons.forEach { button ->
             button.setOnClickListener {
                 if (!button.text.isDigitsOnly()) viewModel.allowDecimal.value = true
-                viewModel.currentFormula.update(buttonTextToGrammar(button.text.toString()))
+                viewModel.grammarFormula.update(buttonTextToGrammar(button.text.toString()))
                 viewModel.displayFormula.update(buttonTextToDisplayText(button.text.toString()))
             }
         }
@@ -108,7 +108,7 @@ class MainFragment : Fragment() {
         view.button2.setOnClickListener {
             //This is the button for the decimal point.
             if (viewModel.allowDecimal.value!!) {
-                viewModel.currentFormula.update(button2.text.toString())
+                viewModel.grammarFormula.update(button2.text.toString())
                 viewModel.displayFormula.update(button2.text.toString())
                 viewModel.allowDecimal.value = false
             }
@@ -118,12 +118,12 @@ class MainFragment : Fragment() {
         view.button8.let { button ->
             // This is the minus button
             button.setOnClickListener {
-                viewModel.currentFormula.update(buttonTextToGrammar("-"))
+                viewModel.grammarFormula.update(buttonTextToGrammar("-"))
                 viewModel.displayFormula.update(buttonTextToDisplayText("-"))
             }
 
             button.setOnLongClickListener {
-                viewModel.currentFormula.update(buttonTextToGrammar("neg"))
+                viewModel.grammarFormula.update(buttonTextToGrammar("neg"))
                 viewModel.displayFormula.update(buttonTextToDisplayText("neg"))
                 return@setOnLongClickListener true
             }
@@ -133,16 +133,16 @@ class MainFragment : Fragment() {
         view.button20.let {
             // This is the clear button
             it.setOnClickListener {
-                viewModel.currentFormula.delete()
+                viewModel.grammarFormula.delete()
                 viewModel.displayFormula.delete()
-                if (viewModel.currentFormula.value!!.isEmpty()) {
+                if (viewModel.grammarFormula.value!!.isEmpty()) {
                     view.calculatorAnswer.text = "0"
                 }
                 viewModel.allowDecimal.value = true
             }
 
             it.setOnLongClickListener {
-                viewModel.currentFormula.clear()
+                viewModel.grammarFormula.clear()
                 viewModel.displayFormula.clear()
                 view.calculatorAnswer.text = "0"
                 viewModel.allowDecimal.value = true
@@ -153,7 +153,7 @@ class MainFragment : Fragment() {
         view.button3.setOnClickListener {
             // This is the equals button
             val formulaDisplay = viewModel.displayFormula.value?.convertAndClean(viewModel)!!
-            val answer = CalculatorBrain.calculate(viewModel.currentFormula.value?.convertAndClean(viewModel))
+            val answer = CalculatorBrain.calculate(viewModel.grammarFormula.value?.convertAndClean(viewModel))
 
             viewModel.let {
                 it.currentAnswer.value = answer
@@ -195,7 +195,7 @@ class MainFragment : Fragment() {
 
                 if (!validHistory.isNullOrEmpty()) {
                     val latest = validHistory.first().answer
-                    viewModel.currentFormula.update(latest)
+                    viewModel.grammarFormula.update(latest)
                     viewModel.displayFormula.update(latest)
                 }
 
@@ -232,30 +232,90 @@ class MainFragment : Fragment() {
             "-" -> "minus"
             "×" -> "*"
             "÷" -> "/"
+
             "%" -> "percentage"
-            "π" -> "PI"
-            "sin" -> "sin("
-            "cos" -> "cos("
-            "tan" -> "tan("
             "EXP" -> "E"
-            "x!" -> ")!"
-            "ln" -> "ln("
-            "log" -> "log("
-            "√" -> "sqrt("
-            "xⁿ" -> ")^("
-            "abs" -> "abs("
-            //This is for the inverse
-            "sin⁻¹" -> "sin-1("
-            "cos⁻¹" -> "cos-1("
-            "tan⁻¹" -> "tan-1("
-            "eⁿ" -> "e^("
-            "10ⁿ" -> "10^("
-            "x²" -> ")^2"
-            "ⁿ√x" -> ")root("
-            "neg" -> "neg("
+            "xⁿ" -> "^"
+
+            "√" ->     smartRoot("root(", "sqrt(")
+            // These are the functions
+            "sin" ->   smartFunction("sin(")
+            "cos" ->   smartFunction("cos(")
+            "tan" ->   smartFunction("tan(")
+            "sin⁻¹" -> smartFunction("sin-1(")
+            "cos⁻¹" -> smartFunction("cos-1(")
+            "tan⁻¹" -> smartFunction("tan-1(")
+            "eⁿ" ->    smartFunction("e^(")
+            "10ⁿ" ->   smartFunction("10^(")
+            "ln" ->    smartFunction("ln(")
+            "log" ->   smartFunction("log(")
+            "neg" ->   smartFunction("neg(")
+            "abs" ->   smartFunction("abs(")
             //This is the numbers and char that requires no change.
-            else -> buttonText
+            "e" -> smartNumber("e")
+            "π" -> smartNumber("PI")
+            else -> smartNumber(buttonText)
         }
+    }
+
+    private fun smartRoot (root:String, sqrt:String): String {
+        val formula = if (root == "√(") {
+            viewModel.displayFormula.value!!
+        }else {
+            viewModel.grammarFormula.value!!
+        }
+        return if(formula.isNotEmpty()){
+            val last = formula.last()
+            when {
+                isNumber(last) -> root
+                last == ")" -> "*$sqrt"
+                else -> sqrt
+            }
+        }else{
+            sqrt
+        }
+    }
+
+    private fun smartNumber(string: String): String{
+        val grammarFormula = viewModel.grammarFormula.value!!
+        return if(grammarFormula.isNotEmpty()){
+            val last = grammarFormula.last()
+            if(string == "PI" || string == "e"){
+                if(isNumber(last)){
+                    "*$string"
+                }
+                else{
+                    string
+                }
+            }
+            else if(isNumber(string) || string == "."){
+                if(last == ")" || last == "percentage" || last == "PI" || last == "e"){
+                    "*$string"
+                }
+                else{
+                    string
+                }
+            }else{
+                string
+            }
+        }else{
+            string
+        }
+    }
+
+    private fun smartFunction(string: String): String{
+        val grammarFormula = viewModel.grammarFormula.value!!
+        return if(grammarFormula.isNotEmpty()){
+            val last = grammarFormula.last()
+            if (isNumber(last)) "*$string" else string
+        }else{
+            string
+        }
+
+    }
+
+    private fun isNumber(string: String): Boolean{
+        return  string.matches("-?((\\d*\\.\\d+)|\\d+\\.?)(E\\d+)?".toRegex()) || string == "PI" || string == "e" || string == "*PI" || string == "*e"
     }
 
     private fun buttonTextToDisplayText(buttonText: String): String {
@@ -265,11 +325,10 @@ class MainFragment : Fragment() {
             "cos" -> "cos("
             "tan" -> "tan("
             "EXP" -> "E"
-            "x!" -> ")!"
             "ln" -> "ln("
             "log" -> "log("
-            "√" -> "√("
-            "xⁿ" -> ")^("
+            "√" ->  smartRoot("√(", "√(")
+            "xⁿ" -> "^"
             "abs" -> "abs("
             //This is for the inverse
             "sin⁻¹" -> "sin⁻¹("
@@ -277,8 +336,6 @@ class MainFragment : Fragment() {
             "tan⁻¹" -> "tan⁻¹("
             "eⁿ" -> "e^("
             "10ⁿ" -> "10^("
-            "x²" -> ")^2"
-            "ⁿ√x" -> ")√("
             "neg" -> "-("
             //This is the numbers and char that requires no change.
             else -> buttonText
@@ -315,8 +372,6 @@ class MainFragment : Fragment() {
             button24?.text = "tan⁻¹"
             button29?.text = "eⁿ"
             button26?.text = "10ⁿ"
-            button25?.text = "x²"
-            button?.text = "ⁿ√x"
         } else {
             button31?.let { button ->
                 button.background = ColorDrawable(ContextCompat.getColor(context!!, R.color.btnDark))
@@ -327,8 +382,6 @@ class MainFragment : Fragment() {
             button24?.text = "tan"
             button29?.text = "ln"
             button26?.text = "log"
-            button25?.text = "√"
-            button?.text = "xⁿ"
         }
     }
 
@@ -344,7 +397,6 @@ class MainFragment : Fragment() {
 
         viewModel.historyDisplay.value = !viewModel.historyDisplay.value!!
     }
-
 
     private fun showNoHistoryLog(adapterSize: Int) {
         if (adapterSize == 0) textNoHistory.visibility = View.VISIBLE

@@ -13,7 +13,7 @@ class MainViewModel(private val historyDao: HistoryDao) : ViewModel(), Coroutine
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default
 
-    val currentFormula = MutableLiveData<MutableList<String>>().apply { value = mutableListOf() }
+    val grammarFormula = MutableLiveData<MutableList<String>>().apply { value = mutableListOf() }
     val displayFormula = MutableLiveData<MutableList<String>>().apply { value = mutableListOf() }
 
     val currentAnswer: MutableLiveData<String> by lazy {
