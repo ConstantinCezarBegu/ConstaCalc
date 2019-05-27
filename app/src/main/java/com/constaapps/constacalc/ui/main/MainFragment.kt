@@ -51,7 +51,7 @@ class MainFragment : Fragment() {
         viewModel = getViewModel()
         switchHistoryButtons(false)
         viewModel.let { viewModel ->
-            viewModel.grammarFormula.observe(this, Observer {
+            viewModel.displayFormula.observe(this, Observer {
                 viewModel.allowEquals = true
                 calculatorFormula.text = it.cleanListToString()
             })
