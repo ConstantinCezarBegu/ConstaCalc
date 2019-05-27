@@ -49,6 +49,7 @@ class MainFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = getViewModel()
+        switchHistoryButtons(false)
         viewModel.let { viewModel ->
             viewModel.displayFormula.observe(this, Observer {
                 calculatorFormula.text = it.cleanListToString()
@@ -152,26 +153,27 @@ class MainFragment : Fragment() {
 
         view.button3.setOnClickListener {
             // This is the equals button
-            val formulaDisplay = viewModel.displayFormula.value?.convertAndClean(viewModel)!!
-            val answer = CalculatorBrain.calculate(viewModel.grammarFormula.value?.convertAndClean(viewModel))
+            val displayFormula = viewModel.displayFormula.value
+            if(!displayFormula.isNullOrEmpty()){
+                val formulaDisplay = displayFormula.convertAndClean(viewModel)
+                val answer = CalculatorBrain.calculate(viewModel.grammarFormula.value?.convertAndClean(viewModel))
 
-            viewModel.let {
-                it.currentAnswer.value = answer
-                it.saveHistory(
-                    HistoryEntity(
-                        formulaDisplay,
-                        answerDisplayOutput(answer.toString()),
-                        answer.matches("-?((\\d*\\.\\d+)|\\d+\\.?)(E\\d+)?".toRegex())
+                viewModel.let {
+                    it.currentAnswer.value = answer
+                    it.saveHistory(
+                        HistoryEntity(
+                            formulaDisplay,
+                            answerDisplayOutput(answer.toString()),
+                            answer.matches("-?((\\d*\\.\\d+)|\\d+\\.?)(E\\d+)?".toRegex())
+                        )
                     )
-                )
+                }
             }
-
-
         }
 
         view.historyImageView.setOnClickListener {
             // THis is the history button
-            switchHistoryButtons()
+            switchHistoryButtons(true)
         }
 
         view.clearBtn.setOnClickListener {
@@ -237,20 +239,20 @@ class MainFragment : Fragment() {
             "EXP" -> "E"
             "xⁿ" -> "^"
 
-            "√" ->     smartRoot("root(", "sqrt(")
+            "√" -> smartRoot("root(", "sqrt(")
             // These are the functions
-            "sin" ->   smartFunction("sin(")
-            "cos" ->   smartFunction("cos(")
-            "tan" ->   smartFunction("tan(")
+            "sin" -> smartFunction("sin(")
+            "cos" -> smartFunction("cos(")
+            "tan" -> smartFunction("tan(")
             "sin⁻¹" -> smartFunction("sin-1(")
             "cos⁻¹" -> smartFunction("cos-1(")
             "tan⁻¹" -> smartFunction("tan-1(")
-            "eⁿ" ->    smartFunction("e^(")
-            "10ⁿ" ->   smartFunction("10^(")
-            "ln" ->    smartFunction("ln(")
-            "log" ->   smartFunction("log(")
-            "neg" ->   smartFunction("neg(")
-            "abs" ->   smartFunction("abs(")
+            "eⁿ" -> smartFunction("e^(")
+            "10ⁿ" -> smartFunction("10^(")
+            "ln" -> smartFunction("ln(")
+            "log" -> smartFunction("log(")
+            "neg" -> smartFunction("neg(")
+            "abs" -> smartFunction("abs(")
             //This is the numbers and char that requires no change.
             "e" -> smartNumber("e")
             "π" -> smartNumber("PI")
@@ -258,64 +260,61 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun smartRoot (root:String, sqrt:String): String {
+    private fun smartRoot(root: String, sqrt: String): String {
         val formula = if (root == "√(") {
             viewModel.displayFormula.value!!
-        }else {
+        } else {
             viewModel.grammarFormula.value!!
         }
-        return if(formula.isNotEmpty()){
+        return if (formula.isNotEmpty()) {
             val last = formula.last()
             when {
                 isNumber(last) -> root
                 last == ")" -> "*$sqrt"
                 else -> sqrt
             }
-        }else{
+        } else {
             sqrt
         }
     }
 
-    private fun smartNumber(string: String): String{
+    private fun smartNumber(string: String): String {
         val grammarFormula = viewModel.grammarFormula.value!!
-        return if(grammarFormula.isNotEmpty()){
+        return if (grammarFormula.isNotEmpty()) {
             val last = grammarFormula.last()
-            if(string == "PI" || string == "e"){
-                if(isNumber(last)){
+            if (string == "PI" || string == "e") {
+                if (isNumber(last)) {
                     "*$string"
-                }
-                else{
+                } else {
                     string
                 }
-            }
-            else if(isNumber(string) || string == "."){
-                if(last == ")" || last == "percentage" || last == "PI" || last == "e"){
+            } else if (isNumber(string) || string == ".") {
+                if (last == ")" || last == "percentage" || last == "PI" || last == "e") {
                     "*$string"
-                }
-                else{
+                } else {
                     string
                 }
-            }else{
+            } else {
                 string
             }
-        }else{
+        } else {
             string
         }
     }
 
-    private fun smartFunction(string: String): String{
+    private fun smartFunction(string: String): String {
         val grammarFormula = viewModel.grammarFormula.value!!
-        return if(grammarFormula.isNotEmpty()){
+        return if (grammarFormula.isNotEmpty()) {
             val last = grammarFormula.last()
             if (isNumber(last)) "*$string" else string
-        }else{
+        } else {
             string
         }
 
     }
 
-    private fun isNumber(string: String): Boolean{
-        return  string.matches("-?((\\d*\\.\\d+)|\\d+\\.?)(E\\d+)?".toRegex()) || string == "PI" || string == "e" || string == "*PI" || string == "*e"
+    private fun isNumber(string: String): Boolean {
+        return string.matches("-?((\\d*\\.\\d+)|\\d+\\.?)(E\\d+)?".toRegex()) || string == "PI" || string == "e" || string == "*PI" || string == "*e"
     }
 
     private fun buttonTextToDisplayText(buttonText: String): String {
@@ -327,7 +326,7 @@ class MainFragment : Fragment() {
             "EXP" -> "E"
             "ln" -> "ln("
             "log" -> "log("
-            "√" ->  smartRoot("√(", "√(")
+            "√" -> smartRoot("√(", "√(")
             "xⁿ" -> "^"
             "abs" -> "abs("
             //This is for the inverse
@@ -385,8 +384,9 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun switchHistoryButtons() {
-        if (!viewModel.historyDisplay.value!!) {
+    private fun switchHistoryButtons(switch: Boolean) {
+        if (switch) viewModel.historyDisplay.value = !viewModel.historyDisplay.value!!
+        if (viewModel.historyDisplay.value!!) {
             buttons.visibility = View.GONE
             history.visibility = View.VISIBLE
 
@@ -394,8 +394,6 @@ class MainFragment : Fragment() {
             buttons.visibility = View.VISIBLE
             history.visibility = View.GONE
         }
-
-        viewModel.historyDisplay.value = !viewModel.historyDisplay.value!!
     }
 
     private fun showNoHistoryLog(adapterSize: Int) {
