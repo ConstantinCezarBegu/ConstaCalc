@@ -51,7 +51,7 @@ class MainFragment : Fragment() {
         viewModel = getViewModel()
         switchHistoryButtons(false)
         viewModel.let { viewModel ->
-            viewModel.displayFormula.observe(this, Observer {
+            viewModel.grammarFormula.observe(this, Observer {
                 viewModel.allowEquals = true
                 calculatorFormula.text = it.cleanListToString()
             })
@@ -125,12 +125,6 @@ class MainFragment : Fragment() {
                 viewModel.displayFormula.update(buttonTextToDisplayText("-"))
             }
 
-            button.setOnLongClickListener {
-                viewModel.grammarFormula.update(buttonTextToGrammar("neg"))
-                viewModel.displayFormula.update(buttonTextToDisplayText("neg"))
-                return@setOnLongClickListener true
-            }
-
         }
 
         view.button20.let {
@@ -139,7 +133,7 @@ class MainFragment : Fragment() {
                 viewModel.grammarFormula.delete()
                 viewModel.displayFormula.delete()
                 if (viewModel.grammarFormula.value!!.isEmpty()) {
-                    view.calculatorAnswer.text = "0"
+                    viewModel.currentAnswer.value = "0"
                 }
                 viewModel.allowDecimal = true
             }
@@ -147,7 +141,7 @@ class MainFragment : Fragment() {
             it.setOnLongClickListener {
                 viewModel.grammarFormula.clear()
                 viewModel.displayFormula.clear()
-                view.calculatorAnswer.text = "0"
+                viewModel.currentAnswer.value = "0"
                 viewModel.allowDecimal = true
                 return@setOnLongClickListener true
             }
@@ -236,7 +230,7 @@ class MainFragment : Fragment() {
     private fun buttonTextToGrammar(buttonText: String): String {
         return when (buttonText) {
             //This is for the non inverse
-            "-" -> "minus"
+            "-" -> smartNegation()
             "×" -> "*"
             "÷" -> "/"
 
@@ -266,6 +260,16 @@ class MainFragment : Fragment() {
         }
     }
 
+    private fun smartNegation(): String{
+        val grammarFormula = viewModel.grammarFormula.value!!
+        return if (grammarFormula.isNotEmpty()) {
+            val last = grammarFormula.last()
+            if (last.isNumber() || last == ")" || last == "percentage") "minus" else "-"
+        } else {
+            "-"
+        }
+    }
+
     private fun smartRoot(root: String, sqrt: String): String {
         val formula = if (root == "√(") {
             viewModel.displayFormula.value!!
@@ -277,6 +281,7 @@ class MainFragment : Fragment() {
             when {
                 last.isNumber() -> root
                 last == ")" -> "*$sqrt"
+                last == "percentage" ->"*$sqrt"
                 else -> sqrt
             }
         } else {
@@ -312,7 +317,7 @@ class MainFragment : Fragment() {
         val grammarFormula = viewModel.grammarFormula.value!!
         return if (grammarFormula.isNotEmpty()) {
             val last = grammarFormula.last()
-            if (last.isNumber()) "*$string" else string
+            if (last.isNumber() || last == ")" || last == "percentage") "*$string" else string
         } else {
             string
         }
@@ -337,7 +342,7 @@ class MainFragment : Fragment() {
             "tan⁻¹" -> "tan⁻¹("
             "eⁿ" -> "e^("
             "10ⁿ" -> "10^("
-            "neg" -> "-("
+            "neg" -> "neg("
             //This is the numbers and char that requires no change.
             else -> buttonText
         }
@@ -373,6 +378,7 @@ class MainFragment : Fragment() {
             button24?.text = "tan⁻¹"
             button29?.text = "eⁿ"
             button26?.text = "10ⁿ"
+            button32?.text = "neg"
         } else {
             button31?.let { button ->
                 button.background = ColorDrawable(ContextCompat.getColor(context!!, R.color.btnDark))
@@ -383,6 +389,7 @@ class MainFragment : Fragment() {
             button24?.text = "tan"
             button29?.text = "ln"
             button26?.text = "log"
+            button32?.text = "abs"
         }
     }
 
