@@ -53,11 +53,15 @@ class HistoryRecyclerViewAdapter (private val mainViewModel: MainViewModel) :
 
         fun bind(historyEntity: HistoryEntity) {
             with(itemView) {
+                val stringAnswer = historyEntity.answer
+
                 formulaText.text = historyEntity.formula
-                answerText.text = historyEntity.answer
+                answerText.text = stringAnswer
                 itemView.setOnClickListener {
-                    mainViewModel.currentFormula.update(answerText.text.toString())
-                    mainViewModel.displayFormula.update(answerText.text.toString())
+                    if (historyEntity.isValid) {
+                        mainViewModel.currentFormula.update(stringAnswer)
+                        mainViewModel.displayFormula.update(stringAnswer)
+                    }
                 }
             }
         }

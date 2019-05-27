@@ -5,9 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.constaapps.constacalc.db.historyTable.HistoryDao
 import com.constaapps.constacalc.db.historyTable.HistoryEntity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
 class MainViewModel(private val historyDao: HistoryDao) : ViewModel(), CoroutineScope {
@@ -42,15 +40,19 @@ class MainViewModel(private val historyDao: HistoryDao) : ViewModel(), Coroutine
         return historyDao.findAll()
     }
 
-    fun saveHistory(historyEntity: HistoryEntity){
+    fun getANS() = runBlocking {
+        withContext(Dispatchers.Default) { historyDao.findLatestCorrectHistory() }
+    }
+
+    fun saveHistory(historyEntity: HistoryEntity) {
         launch { historyDao.save(historyEntity) }
     }
 
-    fun deleteHistory(historyEntity: HistoryEntity){
+    fun deleteHistory(historyEntity: HistoryEntity) {
         launch { historyDao.delete(historyEntity) }
     }
 
-    fun deleteAll(){
+    fun deleteAll() {
         launch { historyDao.dropTable() }
     }
 

@@ -25,4 +25,7 @@ interface HistoryDao {
 
     @Query("DELETE FROM history")
     fun dropTable()
+
+    @Query("SELECT * FROM history WHERE isValid = 1 ORDER BY id DESC")
+    suspend fun findLatestCorrectHistory() : List<HistoryEntity>
 }

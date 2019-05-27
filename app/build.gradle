@@ -27,14 +27,18 @@ android {
 
 dependencies {
     // coroutines implementation
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:0.27.0-eap13"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.1.1"
     // Room implementation
+    implementation "androidx.room:room-ktx:2.1.0-beta01"
     implementation "androidx.room:room-runtime:2.1.0-beta01"
     kapt "androidx.room:room-compiler:2.1.0-beta01"
     // Koin implementation
     implementation 'org.koin:koin-android-viewmodel:1.0.0'
     // Material buttons.
     implementation 'com.android.support:design:28.0.0'
+
+    // Viewmodel coroutines
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.0.0"
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"

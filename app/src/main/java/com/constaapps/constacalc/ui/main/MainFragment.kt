@@ -157,7 +157,13 @@ class MainFragment : Fragment() {
 
             viewModel.let {
                 it.currentAnswer.value = answer
-                it.saveHistory(HistoryEntity(formulaDisplay, answerDisplayOutput(answer.toString())))
+                it.saveHistory(
+                    HistoryEntity(
+                        formulaDisplay,
+                        answerDisplayOutput(answer.toString()),
+                        answer.matches("-?((\\d*\\.\\d+)|\\d+\\.?)(E\\d+)?".toRegex())
+                    )
+                )
             }
 
 
@@ -185,14 +191,21 @@ class MainFragment : Fragment() {
 
             view.button22?.setOnClickListener {
                 //This is the ANS button
+                val validHistory = viewModel.getANS()
+
+                if (!validHistory.isNullOrEmpty()) {
+                    val latest = validHistory.first().answer
+                    viewModel.currentFormula.update(latest)
+                    viewModel.displayFormula.update(latest)
+                }
+
 
             }
 
             view.imageView_portrait.setOnClickListener {
                 activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
-        }
-        else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+        } else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
             view.imageView_portrait.setOnClickListener {
                 activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             }
@@ -200,7 +213,7 @@ class MainFragment : Fragment() {
     }
 
     private fun answerDisplayOutput(it: String): String {
-        return if (it.matches("-?(([0-9]*\\.[0-9]+)|[0-9]+)".toRegex())) {
+        return if (it.matches("-?((\\d*\\.\\d+)|\\d+\\.?)".toRegex())) {
             val numberDouble = String.format("%.11f", it.toDouble()).toDouble()
 
             if ((numberDouble == Math.floor(numberDouble))) {
@@ -319,12 +332,12 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun switchHistoryButtons () {
-        if (!viewModel.historyDisplay.value!!){
+    private fun switchHistoryButtons() {
+        if (!viewModel.historyDisplay.value!!) {
             buttons.visibility = View.GONE
             history.visibility = View.VISIBLE
 
-        }else{
+        } else {
             buttons.visibility = View.VISIBLE
             history.visibility = View.GONE
         }
