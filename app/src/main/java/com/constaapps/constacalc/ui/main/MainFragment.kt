@@ -78,24 +78,6 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun smartHistory(historyString: String, grammarOrDisplay: Boolean): String {
-        val grammarFormula = if (grammarOrDisplay) viewModel.grammarFormula.value
-        else viewModel.displayFormula.value
-        return if (grammarFormula != null) {
-            if (grammarFormula.isNotEmpty()) {
-                val last = grammarFormula.last()
-                if (last.isNumber() || last == ")" || last == if(grammarOrDisplay)"percentage" else "%") {
-                    if(grammarOrDisplay)"*$historyString" else "×$historyString"
-                } else {
-                    historyString
-                }
-            } else {
-                historyString
-            }
-        } else {
-            ""
-        }
-    }
 
     private fun enableButtons(view: View) {
         val buttons =
@@ -215,9 +197,15 @@ class MainFragment : Fragment() {
                 val validHistory = viewModel.getANS()
 
                 if (!validHistory.isNullOrEmpty()) {
+                    val lastGrammar =
+                        if (!viewModel.grammarFormula.value.isNullOrEmpty()) viewModel.grammarFormula.value!!.last()
+                        else ""
+                    val lastDisplay =
+                        if (!viewModel.displayFormula.value.isNullOrEmpty()) viewModel.displayFormula.value!!.last()
+                        else ""
                     val latest = validHistory.first().answer
-                    viewModel.grammarFormula.update(smartHistory(latest, true))
-                    viewModel.displayFormula.update(smartHistory(latest, false))
+                    viewModel.grammarFormula.update(latest.smartFunction(lastGrammar, false))
+                    viewModel.displayFormula.update(latest.smartFunction(lastDisplay, true))
                 }
 
 
@@ -248,9 +236,13 @@ class MainFragment : Fragment() {
     }
 
     private fun buttonTextToGrammar(buttonText: String): String {
+        val last =
+            if (!viewModel.grammarFormula.value.isNullOrEmpty()) viewModel.grammarFormula.value!!.last() else ""
         return when (buttonText) {
+
+
             //This is for the non inverse
-            "-" -> smartNegation()
+            "-" -> smartNegative(last)
             "×" -> "*"
             "÷" -> "/"
 
@@ -258,94 +250,32 @@ class MainFragment : Fragment() {
             "EXP" -> "E"
             "xⁿ" -> "^"
 
-            "√" -> smartRoot("root(", "sqrt(")
+            "√" -> smartRoot(last, false)
             // These are the functions
-            "(" -> smartFunction("(")
-            "sin" -> smartFunction("sin(")
-            "cos" -> smartFunction("cos(")
-            "tan" -> smartFunction("tan(")
-            "sin⁻¹" -> smartFunction("sin-1(")
-            "cos⁻¹" -> smartFunction("cos-1(")
-            "tan⁻¹" -> smartFunction("tan-1(")
-            "eⁿ" -> smartFunction("e^(")
-            "10ⁿ" -> smartFunction("10^(")
-            "ln" -> smartFunction("ln(")
-            "log" -> smartFunction("log(")
-            "neg" -> smartFunction("neg(")
-            "abs" -> smartFunction("abs(")
+            "(" -> "(".smartFunction(last, false)
+            "sin" -> "sin(".smartFunction(last, false)
+            "cos" -> "cos(".smartFunction(last, false)
+            "tan" -> "tan(".smartFunction(last, false)
+            "sin⁻¹" -> "sin-1(".smartFunction(last, false)
+            "cos⁻¹" -> "cos-1(".smartFunction(last, false)
+            "tan⁻¹" -> "tan-1(".smartFunction(last, false)
+            "eⁿ" -> "e^(".smartFunction(last, false)
+            "10ⁿ" -> "10^(".smartFunction(last, false)
+            "ln" -> "ln(".smartFunction(last, false)
+            "log" -> "log(".smartFunction(last, false)
+            "neg" -> "neg(".smartFunction(last, false)
+            "abs" -> "abs(".smartFunction(last, false)
             //This is the numbers and char that requires no change.
-            "e" -> smartNumber("e")
-            "π" -> smartNumber("PI")
-            else -> smartNumber(buttonText)
+            "e" -> "e".smartNumber(last)
+            "π" -> "PI".smartNumber(last)
+            else -> buttonText.smartNumber(last)
         }
     }
 
-    private fun smartNegation(): String{
-        val grammarFormula = viewModel.grammarFormula.value!!
-        return if (grammarFormula.isNotEmpty()) {
-            val last = grammarFormula.last()
-            if (last.isNumber() || last == ")" || last == "percentage") "minus" else "-"
-        } else {
-            "-"
-        }
-    }
-
-    private fun smartRoot(root: String, sqrt: String): String {
-        val isDisplay = root == "√("
-        val formula = if (isDisplay) {
-            viewModel.displayFormula.value!!
-        } else {
-            viewModel.grammarFormula.value!!
-        }
-        return if (formula.isNotEmpty()) {
-            val last = formula.last()
-            when {
-                last.isNumber() -> root
-                last == ")" -> "${if(isDisplay) "×" else "*"}$sqrt"
-                last == "percentage" ->"${if(isDisplay) "×" else "*"}$sqrt"
-                else -> sqrt
-            }
-        } else {
-            sqrt
-        }
-    }
-
-    private fun smartNumber(string: String): String {
-        val grammarFormula = viewModel.grammarFormula.value!!
-        return if (grammarFormula.isNotEmpty()) {
-            val last = grammarFormula.last()
-            if (string == "PI" || string == "e") {
-                if (last.isNumber()) {
-                    "*$string"
-                } else {
-                    string
-                }
-            } else if (string.isNumber() || string == ".") {
-                if (last == ")" || last == "percentage" || last == "PI" || last == "e") {
-                    "*$string"
-                } else {
-                    string
-                }
-            } else {
-                string
-            }
-        } else {
-            string
-        }
-    }
-
-    private fun smartFunction(string: String): String {
-        val grammarFormula = viewModel.grammarFormula.value!!
-        return if (grammarFormula.isNotEmpty()) {
-            val last = grammarFormula.last()
-            if (last.isNumber() || last == ")" || last == "percentage") "*$string" else string
-        } else {
-            string
-        }
-
-    }
 
     private fun buttonTextToDisplayText(buttonText: String): String {
+        val last =
+            if (!viewModel.displayFormula.value.isNullOrEmpty()) viewModel.displayFormula.value!!.last() else ""
         return when (buttonText) {
             //This is for the non inverse
             "sin" -> "sin("
@@ -354,7 +284,7 @@ class MainFragment : Fragment() {
             "EXP" -> "E"
             "ln" -> "ln("
             "log" -> "log("
-            "√" -> smartRoot("√(", "√(")
+            "√" -> smartRoot(last, true)
             "xⁿ" -> "^"
             "abs" -> "abs("
             //This is for the inverse

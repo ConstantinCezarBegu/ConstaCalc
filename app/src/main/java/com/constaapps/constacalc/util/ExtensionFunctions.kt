@@ -7,29 +7,6 @@ import androidx.annotation.LayoutRes
 import androidx.lifecycle.MutableLiveData
 import com.constaapps.constacalc.ui.main.MainViewModel
 
-fun List<String>.convertAndClean(mainViewModel: MainViewModel): String {
-    val radOrDegree =
-        if (mainViewModel.degree.value!!) {
-            this.toString()
-                .replace("sin(", "sdeg(")
-                .replace("cos(", "cdeg(")
-                .replace("tan(", "tdeg(")
-                .replace("sin-1(", "s-1deg(")
-                .replace("cos-1(", "c-1deg(")
-                .replace("tan-1(", "t-1deg(")
-        } else {
-            this.toString()
-                .replace("sdeg(", "sin(")
-                .replace("cdeg(", "cos(")
-                .replace("tdeg(", "tan(")
-                .replace("s-1deg(", "sin-1(")
-                .replace("c-1deg(", "cos-1(")
-                .replace("t-1deg(", "tan-1(")
-        }
-    return radOrDegree.replace(" ", "").replace(",", "").dropLast(1).drop(1)
-}
-
-
 fun List<String>.cleanListToString(): String {
     return this.toString().replace(" ", "").replace(",", "").dropLast(1).drop(1)
 }
@@ -63,7 +40,73 @@ fun ViewGroup.inflate(
     return inflater.inflate(layoutId, this, attachToRoot)
 }
 
+fun List<String>.convertAndClean(mainViewModel: MainViewModel): String {
+    val radOrDegree =
+        if (mainViewModel.degree.value!!) {
+            this.toString()
+                .replace("sin(", "sdeg(")
+                .replace("cos(", "cdeg(")
+                .replace("tan(", "tdeg(")
+                .replace("sin-1(", "s-1deg(")
+                .replace("cos-1(", "c-1deg(")
+                .replace("tan-1(", "t-1deg(")
+        } else {
+            this.toString()
+                .replace("sdeg(", "sin(")
+                .replace("cdeg(", "cos(")
+                .replace("tdeg(", "tan(")
+                .replace("s-1deg(", "sin-1(")
+                .replace("c-1deg(", "cos-1(")
+                .replace("t-1deg(", "tan-1(")
+        }
+    return radOrDegree.replace(" ", "").replace(",", "").dropLast(1).drop(1)
+}
+
 
 fun String.isNumber(): Boolean {
-    return this.matches("-?((\\d*\\.\\d+)|\\d+\\.?)(E\\d+)?".toRegex()) || this == "PI" || this == "e" || this == "*PI" || this == "*e"
+    return this.matches(".?-?((\\d*\\.\\d+)|\\d+\\.?)(E\\d+)?".toRegex())
+}
+
+fun String.isCharacterNumber(): Boolean {
+    return this == "PI" || this == "e" || this == "*PI" || this == "*e"
+}
+
+fun String.isSpecialCase(): Boolean {
+    return this == ")" || this == "percentage"
+}
+
+fun String.smartNumber(last: String): String {
+    return if ((this == "PI" || this == "e") && (last.isSpecialCase() || last.isNumber() || last.isCharacterNumber())) {
+        "*$this"
+    } else if (this.isNumber() && (last.isSpecialCase() || last.isCharacterNumber())) {
+        "*$this"
+    } else {
+        this
+    }
+}
+
+fun String.smartFunction(last: String, isDisplay: Boolean): String {
+    return if (last.isNumber() || last.isSpecialCase() || last.isCharacterNumber()) {
+        "${if (isDisplay) "×" else "*"}$this"
+    } else {
+        this
+    }
+}
+
+fun smartRoot(last: String, isDisplay: Boolean): String {
+    return if (last.isNumber() || last.isCharacterNumber()) {
+        if (isDisplay) "√(" else "root("
+    } else if (last.isSpecialCase()) {
+        if (isDisplay) "×√(" else "*sqrt("
+    } else {
+        if (isDisplay) "√(" else "sqrt("
+    }
+}
+
+fun smartNegative(last: String): String {
+    return if (last.isCharacterNumber() || last.isSpecialCase() || last.isNumber()) {
+        "minus"
+    } else {
+        "-"
+    }
 }

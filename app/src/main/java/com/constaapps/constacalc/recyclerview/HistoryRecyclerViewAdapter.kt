@@ -9,7 +9,7 @@ import com.constaapps.constacalc.R
 import com.constaapps.constacalc.db.historyTable.HistoryEntity
 import com.constaapps.constacalc.ui.main.MainViewModel
 import com.constaapps.constacalc.util.inflate
-import com.constaapps.constacalc.util.isNumber
+import com.constaapps.constacalc.util.smartFunction
 import com.constaapps.constacalc.util.update
 import kotlinx.android.synthetic.main.layout_list_history_item.view.*
 
@@ -59,32 +59,19 @@ class HistoryRecyclerViewAdapter(private val mainViewModel: MainViewModel) :
                 answerText.text = stringAnswer
                 itemView.setOnClickListener {
                     if (historyEntity.isValid) {
-                        mainViewModel.grammarFormula.update(smartHistory(stringAnswer, true))
-                        mainViewModel.displayFormula.update(smartHistory(stringAnswer, false))
+                        val lastGrammar =
+                            if (!mainViewModel.grammarFormula.value.isNullOrEmpty()) mainViewModel.grammarFormula.value!!.last()
+                            else ""
+                        val lastDisplay =
+                            if (!mainViewModel.displayFormula.value.isNullOrEmpty()) mainViewModel.displayFormula.value!!.last()
+                            else ""
+                        mainViewModel.grammarFormula.update(stringAnswer.smartFunction(lastGrammar, false))
+                        mainViewModel.displayFormula.update(stringAnswer.smartFunction(lastDisplay, true))
                     }
                 }
             }
 
 
-        }
-
-        private fun smartHistory(historyString: String, grammarOrDisplay: Boolean): String {
-            val grammarFormula = if (grammarOrDisplay) mainViewModel.grammarFormula.value
-            else mainViewModel.displayFormula.value
-            return if (grammarFormula != null) {
-                if (grammarFormula.isNotEmpty()) {
-                    val last = grammarFormula.last()
-                    if (last.isNumber() || last == ")" || last == if(grammarOrDisplay)"percentage" else "%") {
-                        if(grammarOrDisplay)"*$historyString" else "×$historyString"
-                    } else {
-                        historyString
-                    }
-                } else {
-                    historyString
-                }
-            } else {
-                ""
-            }
         }
     }
 }
