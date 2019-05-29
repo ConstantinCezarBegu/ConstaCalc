@@ -5,6 +5,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.lifecycle.MutableLiveData
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
+import com.constaapps.constacalc.recyclerview.SwipeToDeleteCallback
 import com.constaapps.constacalc.ui.main.MainViewModel
 
 fun List<String>.cleanListToString(): String {
@@ -38,6 +41,11 @@ fun ViewGroup.inflate(
     attachToRoot: Boolean = false
 ): View {
     return inflater.inflate(layoutId, this, attachToRoot)
+}
+
+fun RecyclerView.attachSwipeHandler(swipeHandler: SwipeToDeleteCallback) {
+    val itemTouchHelper = ItemTouchHelper(swipeHandler)
+    itemTouchHelper.attachToRecyclerView(this)
 }
 
 fun List<String>.convertAndClean(mainViewModel: MainViewModel): String {

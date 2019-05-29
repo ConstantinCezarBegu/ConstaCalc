@@ -49,6 +49,13 @@ class HistoryRecyclerViewAdapter(private val mainViewModel: MainViewModel) :
         }
     }
 
+    fun removeAt(position: Int) {
+
+        mainViewModel.deleteHistory(this.getItem(position))
+        notifyItemRemoved(position)
+
+    }
+
     inner class AchievementViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         fun bind(historyEntity: HistoryEntity) {
@@ -70,8 +77,6 @@ class HistoryRecyclerViewAdapter(private val mainViewModel: MainViewModel) :
                     }
                 }
             }
-
-
         }
     }
 }

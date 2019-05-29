@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.constaapps.constacalc.R
 import com.constaapps.constacalc.db.historyTable.HistoryEntity
 import com.constaapps.constacalc.recyclerview.HistoryRecyclerViewAdapter
+import com.constaapps.constacalc.recyclerview.SwipeToDeleteCallback
 import com.constaapps.constacalc.util.*
 import kotlinx.android.synthetic.main.main_fragment.*
 import kotlinx.android.synthetic.main.main_fragment.view.*
@@ -42,8 +43,9 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        historyRecyclerView.attachSwipeHandler(createSwipeHandler())
         view.historyRecyclerView?.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        enableButtons(view)
+        enableButtons()
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -78,25 +80,34 @@ class MainFragment : Fragment() {
         }
     }
 
+    private fun createSwipeHandler(): SwipeToDeleteCallback {
+        return object : SwipeToDeleteCallback(context!!) {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val adapter = historyRecyclerView.adapter as HistoryRecyclerViewAdapter
+                adapter.removeAt(viewHolder.adapterPosition)
+            }
+        }
+    }
 
-    private fun enableButtons(view: View) {
+
+    private fun enableButtons() {
         val buttons =
             if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
                 listOf<Button>(
-                    view.button!!, view.button1, view.button4, view.button5,
-                    view.button6, view.button7, view.button9, view.button10,
-                    view.button11, view.button12, view.button13, view.button14, view.button15,
-                    view.button16, view.button17, view.button18, view.button19, view.button21!!,
-                    view.button23!!, view.button24!!, view.button25!!, view.button26!!,
-                    view.button27!!, view.button28!!, view.button29!!, view.button30!!,
-                    view.button32!!
+                    button!!, button1, button4, button5,
+                    button6, button7, button9, button10,
+                    button11, button12, button13, button14, button15,
+                    button16, button17, button18, button19, button21!!,
+                    button23!!, button24!!, button25!!, button26!!,
+                    button27!!, button28!!, button29!!, button30!!,
+                    button32!!
                 )
             } else {
                 listOf<Button>(
-                    view.button1, view.button4, view.button5,
-                    view.button6, view.button7, view.button9, view.button10,
-                    view.button11, view.button12, view.button13, view.button14, view.button15,
-                    view.button16, view.button17, view.button18, view.button19
+                    button1, button4, button5,
+                    button6, button7, button9, button10,
+                    button11, button12, button13, button14, button15,
+                    button16, button17, button18, button19
                 )
             }
 
@@ -109,7 +120,7 @@ class MainFragment : Fragment() {
             }
         }
 
-        view.button2.setOnClickListener {
+        button2.setOnClickListener {
             //This is the button for the decimal point.
             if (viewModel.allowDecimal) {
                 viewModel.grammarFormula.update(button2.text.toString())
@@ -119,7 +130,7 @@ class MainFragment : Fragment() {
 
         }
 
-        view.button8.let { button ->
+        button8.let { button ->
             // This is the minus button
             button.setOnClickListener {
                 viewModel.allowDecimal = true
@@ -129,7 +140,7 @@ class MainFragment : Fragment() {
 
         }
 
-        view.button20.let {
+        button20.let {
             // This is the clear button
             it.setOnClickListener {
                 viewModel.grammarFormula.delete()
@@ -149,7 +160,7 @@ class MainFragment : Fragment() {
             }
         }
 
-        view.button3.setOnClickListener {
+        button3.setOnClickListener {
             // This is the equals button
             if (viewModel.allowEquals) {
                 val displayFormula = viewModel.displayFormula.value
@@ -172,27 +183,27 @@ class MainFragment : Fragment() {
             }
         }
 
-        view.historyImageView.setOnClickListener {
+        historyImageView.setOnClickListener {
             // THis is the history button
             switchHistoryButtons(true)
         }
 
-        view.clearBtn.setOnClickListener {
+        clearBtn.setOnClickListener {
             viewModel.deleteAll()
         }
 
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            view.button33?.setOnClickListener {
+            button33?.setOnClickListener {
                 //This is the rad button
                 viewModel.degree.value = !viewModel.degree.value!!
             }
 
-            view.button31?.setOnClickListener {
+            button31?.setOnClickListener {
                 //This is the INV button
                 viewModel.inverse.value = !viewModel.inverse.value!!
             }
 
-            view.button22?.setOnClickListener {
+            button22?.setOnClickListener {
                 //This is the ANS button
                 val validHistory = viewModel.getANS()
 
@@ -211,11 +222,11 @@ class MainFragment : Fragment() {
 
             }
 
-            view.imageView_portrait.setOnClickListener {
+            imageView_portrait.setOnClickListener {
                 activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
         } else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            view.imageView_portrait.setOnClickListener {
+            imageView_portrait.setOnClickListener {
                 activity!!.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             }
         }
